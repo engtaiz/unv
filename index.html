@@ -1233,6 +1233,15 @@
             }
         ];
 
+
+            // إظهار نظام التخصصات
+            document.getElementById('departmentsBtn').addEventListener('click', function() {
+                const system = document.getElementById('academicSystem');
+                system.style.display = 'block';
+                showSections();
+            });
+
+        
         // إعدادات Google Drive API (استبدل هذه القيم بمفاتيحك الخاصة)
         const GOOGLE_CLIENT_ID = '610677939149-4bai1rgeosad81djaaepu3rqtqce1gud.apps.googleusercontent.com';
         const GOOGLE_API_KEY = 'AIzaSyAhno4TNDmXMdfos8YS61PzaAtoxnF_LG8';
@@ -1694,12 +1703,6 @@ window.addEventListener('load', async () => {
                 });
             }, 300);
             
-            // إظهار نظام التخصصات
-            document.getElementById('departmentsBtn').addEventListener('click', function() {
-                const system = document.getElementById('academicSystem');
-                system.style.display = 'block';
-                showSections();
-            });
             
             // منع إرسال الفورم عند تسجيل الدخول
             document.getElementById('loginForm').addEventListener('submit', function(e) {
