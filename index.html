@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الملفات الأكاديمية - كلية الهندسة جامعة تعز</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://apis.google.com/js/api.js" defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #333;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="none" stroke="white" stroke-width="2" opacity="0.1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="24" fill="white" opacity="0.1">جامعة تعز</text></svg>');
+            background-size: 300px;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        header {
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .university-info h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .university-info p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        nav ul li a:hover, 
+        nav ul li a.active {
+            background: #1abc9c;
+            color: #fff;
+        }
+        
+        .departments-btn-container {
+            display: flex;
+            justify-content: center;
+            margin: 25px 0;
+        }
+        
+        #departmentsBtn {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        #departmentsBtn:hover {
+            background: #1abc9c;
+            transform: translateY(-3px);
+        }
+        
+        #academicSystem {
+            display: none;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            margin: 20px auto;
+            max-width: 1400px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .academic-container {
+            display: flex;
+            min-height: 500px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .academic-sidebar {
+            width: 280px;
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .academic-content {
+            flex-grow: 1;
+            background: white;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .academic-breadcrumbs {
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #34495e;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .academic-area {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        
+        .section-btn, .level-btn, .term-btn, .subject-btn, .subitem-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin: 8px 0;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            text-align: right;
+            background-color: #34495e;
+            color: white;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-btn:hover, .level-btn:hover, 
+        .term-btn:hover, .subject-btn:hover, 
+        .subitem-btn:hover {
+            background-color: #1abc9c;
+            transform: translateX(-5px);
+        }
+        
+        .section-btn i, .level-btn i, 
+        .term-btn i, .subject-btn i, 
+        .subitem-btn i {
+            margin-left: 10px;
+        }
+        
+        .back-btn {
+            background: #e74c3c !important;
+        }
+        
+        .back-btn:hover {
+            background: #c0392b !important;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .subject-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .action-btn.lectures { background: #9b59b6; }
+        .action-btn.summaries { background: #2ecc71; }
+        .action-btn.exams { background: #e67e22; }
+        .action-btn.practicals { background: #16a085; }
+        .action-btn.upload { background: #3498db; }
+        
+        .upload-form {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .upload-form h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .upload-form input, .upload-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .upload-form button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .upload-form button:hover {
+            background: #1abc9c;
+        }
+        
+        .files-list {
+            margin-top: 20px;
+        }
+        
+        .files-list h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .file-item {
+            padding: 10px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid #3498db;
+            transition: all 0.2s;
+        }
+        
+        .file-item:hover {
+            background: #e8f4f1;
+        }
+        
+        .file-item a {
+            color: #2c3e50;
+            text-decoration: none;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .file-date {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+        
+        .delete-file {
+            cursor: pointer;
+            color: #e74c3c;
+            margin-left: 10px;
+            padding: 5px;
+        }
+        
+        .delete-file:hover {
+            color: #c0392b;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .news-section, .login-section {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            flex: 1;
+            min-width: 300px;
+            max-width: 600px;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #1abc9c;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .news-item {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .news-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .news-item h3 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .news-item p {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .news-date {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            display: block;
+        }
+        
+        .news-actions {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .edit-news, .delete-news {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .edit-news {
+            background: #3498db;
+            color: white;
+        }
+        
+        .delete-news {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .edit-news:hover, .delete-news:hover {
+            transform: scale(1.1);
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .form-group input {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            border-color: #1abc9c;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.2);
+        }
+        
+        .login-btn {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .login-btn:hover {
+            background: #1abc9c;
+        }
+        
+        #adminOptions {
+            display: none;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            margin: 30px auto;
+            max-width: 900px;
+        }
+        
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .admin-option {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+            cursor: pointer;
+        }
+        
+        .admin-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            background: #e8f4f1;
+            border-color: #1abc9c;
+        }
+        
+        .admin-option i {
+            font-size: 2.5rem;
+            color: #1abc9c;
+            margin-bottom: 15px;
+        }
+        
+        .admin-option h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .admin-option p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        footer {
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            padding: 40px 20px 20px;
+            margin-top: 50px;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 30px;
+        }
+        
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .footer-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1abc9c;
+        }
+        
+        .footer-links a {
+            display: block;
+            color: #ecf0f1;
+            text-decoration: none;
+            margin: 10px 0;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer-links a:hover {
+            color: #1abc9c;
+            transform: translateX(5px);
+        }
+        
+        .footer-btn {
+            background: #1abc9c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .footer-btn:hover {
+            background: #16a085;
+        }
+        
+        .copyright {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #bdc3c7;
+            font-size: 0.9rem;
+        }
+        
+        .admin-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        
+        .gdrive-status {
+            padding: 8px;
+            border-radius: 4px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .gdrive-connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .gdrive-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        @media (max-width: 992px) {
+            .academic-container {
+                flex-direction: column;
+            }
+            
+            .academic-sidebar {
+                width: 100%;
+                max-height: 250px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .main-content {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-overlay"></div>
+    
+    <header>
+        <div class="logo-container">
+            <div class="logo">ت</div>
+            <div class="university-info">
+                <h1>جامعة تعز</h1>
+                <p>كلية الهندسة - التكنولوجيا والابتكار</p>
+            </div>
+        </div>
+        
+        <nav>
+            <ul>
+                <li><a href="#" class="active"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="#"><i class="fas fa-question-circle"></i> الأسئلة الشائعة</a></li>
+                <li><a href="#"><i class="fas fa-calendar-alt"></i> الجدول الحالي</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="departments-btn-container">
+        <button id="departmentsBtn">
+            <i class="fas fa-book-open"></i> التخصصات الأكاديمية
+        </button>
+    </div>
+    
+    <div id="academicSystem">
+        <div class="academic-container">
+            <div class="academic-sidebar">
+                <h2><i class="fas fa-graduation-cap"></i> الأقسام</h2>
+                <div id="sections"></div>
+            </div>
+            
+            <div class="academic-content">
+                <div class="academic-breadcrumbs" id="breadcrumbs">اختر قسمًا من اليسار للبدء.</div>
+                <div class="academic-area" id="contentArea"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <section class="news-section fade-in">
+            <h2 class="section-title"><i class="fas fa-newspaper"></i> آخر الأخبار</h2>
+            <div id="newsContainer">
+                <!-- سيتم عرض الأخبار هنا ديناميكيًا -->
+            </div>
+        </section>
+        
+        <section class="login-section fade-in">
+            <h2 class="section-title"><i class="fas fa-lock"></i> تسجيل دخول المشرف</h2>
+            
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user"></i> اسم المستخدم:</label>
+                    <input type="text" id="username" placeholder="أدخل اسم المستخدم" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-key"></i> كلمة المرور:</label>
+                    <input type="password" id="password" placeholder="أدخل كلمة المرور" required>
+                </div>
+                
+                <button type="submit" class="login-btn"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</button>
+            </form>
+            
+            <div class="gdrive-status gdrive-disconnected" id="gdriveStatus">
+                <i class="fas fa-exclamation-triangle"></i> غير متصل بـ Google Drive
+            </div>
+        </section>
+    </div>
+    
+    <div id="adminOptions">
+        <h2 class="section-title">
+            <i class="fas fa-cog"></i> لوحة تحكم المشرف
+            <span class="admin-badge">مسؤول</span>
+        </h2>
+        
+        <div class="admin-grid">
+            <div class="admin-option" id="publishNews">
+                <i class="fas fa-bullhorn"></i>
+                <h3>نشر أخبار</h3>
+                <p>إضافة أخبار جديدة للموقع</p>
+            </div>
+            
+            <div class="admin-option" id="uploadLectures">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <h3>نشر محاضرات</h3>
+                <p>رفع محاضرات جديدة للطلاب</p>
+            </div>
+            
+            <div class="admin-option" onclick="alert('نافذة نشر ملخصات ستفتح هنا')">
+                <i class="fas fa-file-alt"></i>
+                <h3>نشر ملخصات</h3>
+                <p>إضافة ملخصات دراسية للمواد</p>
+            </div>
+            
+            <div class="admin-option" onclick="alert('نافذة نشر نماذج اختبارات ستفتح هنا')">
+                <i class="fas fa-file-signature"></i>
+                <h3>نشر نماذج اختبارات</h3>
+                <p>رفع نماذج اختبارات سابقة</p>
+            </div>
+            
+            <div class="admin-option" onclick="alert('نافذة تعديل التخصصات والمواد ستفتح هنا')">
+                <i class="fas fa-book"></i>
+                <h3>تعديل التخصصات والمواد</h3>
+                <p>إدارة التخصصات والمواد الدراسية</p>
+            </div>
+            
+            <div class="admin-option" onclick="alert('نافذة إدارة المستخدمين ستفتح هنا')">
+                <i class="fas fa-users-cog"></i>
+                <h3>إدارة المستخدمين</h3>
+                <p>إضافة وإدارة حسابات المشرفين</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3 class="footer-title">روابط سريعة</h3>
+                <div class="footer-links">
+                    <a href="#"><i class="fas fa-users"></i> أعضاء الاتحاد</a>
+                    <a href="#"><i class="fas fa-star"></i> موقع الامتياز</a>
+                    <a href="#"><i class="fas fa-info-circle"></i> معلومات منشئ الموقع</a>
+                    <a href="#"><i class="fab fa-telegram"></i> جروبات تيليغرام</a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">مناديب الأقسام</h3>
+                <p>تواصل مع مناديب الأقسام للاستفسارات الأكاديمية</p>
+                <button class="footer-btn" onclick="alert('قائمة مناديب الأقسام ستظهر هنا')">
+                    <i class="fas fa-user-tie"></i> عرض المناديب
+                </button>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">اتصل بنا</h3>
+                <p><i class="fas fa-map-marker-alt"></i> جامعة تعز - كلية الهندسة</p>
+                <p><i class="fas fa-phone"></i> 123456789</p>
+                <p><i class="fas fa-envelope"></i> engineering@taiz-univ.edu.ye</p>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>جميع الحقوق محفوظة لهيئة اتحاد طلاب كلية الهندسة - جامعة تعز © 2023</p>
+            <p>نظام إدارة الملفات الأكاديمية - الإصدار 3.0</p>
+        </div>
+    </footer>
+    
+    <script>
+        // بيانات التخصصات
+        const data = {
+            "الاتصالات": {
+                "المستويات": {
+                    "مستوى 1": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "رياضيات 2",
+                            "اساسيات برمجه",
+                            "اساسيات هندسه كهربائيه",
+                            "لغه انجليزيه",
+                            "لغه عربيه",
+                            "فيزياء 2"
+                        ]
+                    },
+                    "مستوى 2": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "تحليل عددي",
+                            "تحليل دوائر كهربائي",
+                            "اشارات ونظم",
+                            "رياضيات متقطعه",
+                            "نبائط الالكترونيات",
+                            "البرمجه الكائنيه المواجهه"
+                        ]
+                    },
+                    "مستوى 3": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "انتشار الموجات",
+                            "معالجه الصور",
+                            "تصميم الانظمه بالمعالج الدقيق",
+                            "تصميم نظم التحكم",
+                            "معماريه حاسوب",
+                            "نظريه اتصالات"
+                        ]
+                    },
+                    "مستوى 4": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "هندسه البرمجيات",
+                            "سمنار",
+                            "هوائيات",
+                            "الاتصال بالاقمار الصناعيه",
+                            "هندسه الموجات الدقيقه",
+                            "شبكات الاتصال والتبديل",
+                            "ارسال البيانات"
+                        ]
+                    },
+                    "مستوى 5": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "امن الاتصالات",
+                            "شبكات لاسلكيه متقدم"
+                        ]
+                    }
+                }
+            },
+            "تكنولوجيا المعلومات": {
+                "المستويات": {
+                    "مستوى 1": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "تكامل",
+                            "برمجه الحاسوب",
+                            "رياضيات متقطعه",
+                            "لغه انجليزيه",
+                            "لغه عربي",
+                            "اساسيات تقنيه المعلومات",
+                            "اسلاميه"
+                        ]
+                    },
+                    "مستوى 2": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "نظم تشغيل",
+                            "البرمجه كائنيه التوجه",
+                            "بنيه وتنظيم الحاسبات",
+                            "تكنولوجيا الويب",
+                            "تكنولوجيا شبكات الحاسوب",
+                            "اداره قواعد البيانات"
+                        ]
+                    },
+                    "مستوى 3": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "هندسه البرمجيات",
+                            "معماريه الحاسوب",
+                            "برمجه الأحداث المساقه",
+                            "ويب 2",
+                            "جافا متقدم",
+                            "الاحتسابيه والاتمته"
+                        ]
+                    },
+                    "مستوى 4": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "معالجه الاشارات الرقميه",
+                            "الرسم بالحاسوب",
+                            "شبكات الحاسوب 2",
+                            "سمنار",
+                            "نظم تحكم",
+                            "امنيه شبكات"
+                        ]
+                    },
+                    "مستوى 5": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "شبكات عصبيه",
+                            "اختياري 2"
+                        ]
+                    }
+                }
+            },
+            "البرمجيات": {
+                "المستويات": {
+                    "مستوى 1": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "تكامل",
+                            "برمجه الحاسوب",
+                            "رياضيات متقطعه",
+                            "لغه انجليزيه",
+                            "لغه عربيه",
+                            "اساسيات هندسه البرمجيات",
+                            "اسلاميه"
+                        ]
+                    },
+                    "مستوى 2": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "نظم تشغيل",
+                            "البرمجه كائنيه التوجه",
+                            "بنيه وتنظيم الحاسبات",
+                            "تكنولوجيا الويب",
+                            "تصميم وعماره البرمجيات",
+                            "اداره قواعد البيانات"
+                        ]
+                    },
+                    "مستوى 3": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "هندسه البرمجيات",
+                            "معماريه الحاسوب",
+                            "برمجه الأحداث المساقه",
+                            "ويب 2",
+                            "جافا متقدم",
+                            "الاحتسابيه والاتمته"
+                        ]
+                    },
+                    "مستوى 4": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "برمجه منطقيه وضيفيه",
+                            "الرسم بالحاسوب",
+                            "شبكات الحاسوب 2",
+                            "سمنار",
+                            "اداره المشاريع البرمجه",
+                            "اداره الجوده البرمجيه"
+                        ]
+                    },
+                    "مستوى 5": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "شبكات عصبيه",
+                            "اختياري 2"
+                        ]
+                    }
+                }
+            },
+            "الصناعية": {
+                "المستويات": {
+                    "مستوى 1": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "تكامل",
+                            "اساسيات برمجه",
+                            "جبر خطي",
+                            "لغه انجليزيه",
+                            "لغه عربيه",
+                            "فيزياء هندسيه",
+                            "رسم هندسي"
+                        ]
+                    },
+                    "مستوى 2": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "تحليل عددي",
+                            "بحوث عمليات",
+                            "مقاومه المواد",
+                            "التصميم المنطقي الرقمي",
+                            "عمليات صناعيه",
+                            "ديناميكا",
+                            "ميكانيكا الموائع",
+                            "الصيانه الهندسيه",
+                            "بحوث العمليات 2",
+                            "الاداره الصناعيه",
+                            "النمذجه والمحاكات"
+                        ]
+                    },
+                    "مستوى 4": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "سمنار",
+                            "اداره الجوده الشامله",
+                            "تخطيط المرافق والمنشآت",
+                            "اداره المشاريع الهندسية",
+                            "القياسات وأجهزة القياس"
+                        ]
+                    },
+                    "مستوى 5": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "سلاسل الإمداد",
+                            "التصنيع المرن"
+                        ]
+                    }
+                }
+            },
+            "أمن سبراني وشبكات": {
+                "المستويات": {
+                    "مستوى 1": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "تكامل",
+                            "تقنيه برمجه",
+                            "رياضيات متقطعه",
+                            "لغه انجليزيه",
+                            "لغه عربيه",
+                            "اساسيات هندسه كهربائيه",
+                            "ثقافه اسلاميه"
+                        ]
+                    },
+                    "مستوى 2": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "مقدمه في التشفير",
+                            "الاحتمالات والاحصاء",
+                            "بنيه وتنظيم الحاسبات",
+                            "تقنيات الويب",
+                            "شبكات الحاسوب",
+                            "قواعد البيانات"
+                        ]
+                    },
+                    "مستوى 3": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "اشارات ونظم",
+                            "TCP/IP",
+                            "معماريه حاسوب",
+                            "نظم موزعه",
+                            "VLSI",
+                            "امنيه شبكات"
+                        ]
+                    },
+                    "مستوى 4": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "حوسبه ذكاء",
+                            "اداره واقتصاد",
+                            "تحليل وتصميم الشبكات الواسعه",
+                            "اداره نظم وشبكات",
+                            "انظمه مضمنه 2",
+                            "مناهج بحث"
+                        ]
+                    },
+                    "مستوى 5": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "تدريب صناعي"
+                        ]
+                    }
+                }
+            },
+            "ميكاترونكس": {
+                "المستويات": {
+                    "مستوى 1": {
+                        "الترم 1": [
+                            "لغه عربيه",
+                            "لغه انجليزيه",
+                            "اسلاميه",
+                            "اساسيات حاسوب",
+                            "تفاضل",
+                            "فيزياء",
+                            "رسم هندسي"
+                        ],
+                        "الترم 2": [
+                            "تكامل",
+                            "فيزياء",
+                            "رسم هندسي",
+                            "جبر خطي",
+                            "لغه انجليزيه",
+                            "لغه عربيه",
+                            "اساسيات برمجه"
+                        ]
+                    },
+                    "مستوى 2": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "تحليل عددي",
+                            "تحليل دوائر كهربائي",
+                            "مقاومه المواد",
+                            "الكترونيات",
+                            "ديناميكا",
+                            "ميكانيكا الموائع"
+                        ]
+                    },
+                    "مستوى 3": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "الالات الكهربائيه",
+                            "تحكم الي",
+                            "مقدمه في الروبوتات",
+                            "ديناميكا الآلات اهتزازات",
+                            "قياسات وأجهزة قياس",
+                            "نمذجه ومحاكات"
+                        ]
+                    },
+                    "مستوى 4": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "الذكاء الاصطناعي",
+                            "سمنار",
+                            "مقدمه ميكاترونيات",
+                            "دراسه جدوى",
+                            "الكترونيات الطاقه"
+                        ]
+                    },
+                    "مستوى 5": {
+                        "الترم 1": [],
+                        "الترم 2": [
+                            "روبوتات واتمته",
+                            "تصميم انظمه الميكاترونيات",
+                            "القياده الالكترونيه"
+                        ]
+                    }
+                }
+            }
+        };
+
+        // متغيرات النظام الأكاديمي
+        let pathStack = [];
+        let isAdminLoggedIn = false;
+        let googleAccessToken = null;
+        const containerSections = document.getElementById('sections');
+        const contentArea = document.getElementById('contentArea');
+        const breadcrumbs = document.getElementById('breadcrumbs');
+        const newsContainer = document.getElementById('newsContainer');
+        const gdriveStatus = document.getElementById('gdriveStatus');
+        
+        // بيانات الأخبار
+        let news = JSON.parse(localStorage.getItem('university_news')) || [
+            {
+                id: 1,
+                title: "ورشة عمل حول الذكاء الاصطناعي وتطبيقاته",
+                content: "ينظم قسم تكنولوجيا المعلومات ورشة عمل حول تطبيقات الذكاء الاصطناعي في الصناعة يوم الثلاثاء القادم.",
+                date: "2023-06-15"
+            },
+            {
+                id: 2,
+                title: "إعلان نتائج الفصل الدراسي الثاني",
+                content: "تم الإعلان عن نتائج الفصل الدراسي الثاني لجميع المستويات، يمكن للطلاب الاطلاع على النتائج عبر النظام الإلكتروني.",
+                date: "2023-06-10"
+            },
+            {
+                id: 3,
+                title: "مسابقة الروبوتات السنوية",
+                content: "تدعو الكلية طلابها للمشاركة في مسابقة الروبوتات السنوية التي ستقام خلال الشهر القادم.",
+                date: "2023-06-05"
+            }
+        ];
+
+        // إعدادات Google Drive API (استبدل هذه القيم بمفاتيحك الخاصة)
+        const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+        const GOOGLE_API_KEY = 'YOUR_API_KEY';
+        const DRIVE_FOLDER_ID = 'YOUR_FOLDER_ID';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+        // تهيئة Google API
+        function initGoogleAPI() {
+            gapi.load('client:auth2', () => {
+                gapi.client.init({
+                    apiKey: GOOGLE_API_KEY,
+                    clientId: GOOGLE_CLIENT_ID,
+                    scope: SCOPES,
+                    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+                }).then(() => {
+                    gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+                    updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+                }).catch(err => {
+                    console.error('Error initializing Google API:', err);
+                    gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> خطأ في تهيئة Google Drive API';
+                });
+            });
+        }
+
+        // تحديث حالة تسجيل الدخول
+        function updateSigninStatus(isSignedIn) {
+            if (isSignedIn) {
+                googleAccessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
+                gdriveStatus.className = 'gdrive-status gdrive-connected';
+                gdriveStatus.innerHTML = '<i class="fas fa-check-circle"></i> متصل بـ Google Drive بنجاح';
+            } else {
+                googleAccessToken = null;
+                gdriveStatus.className = 'gdrive-status gdrive-disconnected';
+                gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> غير متصل بـ Google Drive';
+            }
+        }
+
+        // تسجيل الدخول إلى Google
+        function handleGoogleSignIn() {
+            gapi.auth2.getAuthInstance().signIn().then(() => {
+                console.log('تم تسجيل الدخول بنجاح');
+            }).catch(err => {
+                console.error('Error signing in:', err);
+                alert('حدث خطأ أثناء تسجيل الدخول إلى Google Drive');
+            });
+        }
+
+        // وظائف النظام الأكاديمي
+        function clearContent() {
+            contentArea.innerHTML = '';
+            breadcrumbs.textContent = '';
+        }
+        
+        function updateBreadcrumbs() {
+            breadcrumbs.textContent = pathStack.join(' > ') || 'اختر قسمًا من اليسار للبدء.';
+        }
+        
+        function createButton(text, className = '', onClick = null, icon = '') {
+            const btn = document.createElement('button');
+            btn.innerHTML = icon ? `<i class="${icon}"></i> ${text}` : text;
+            btn.className = className;
+            if(onClick) btn.onclick = onClick;
+            return btn;
+        }
+        
+        function showSections() {
+            containerSections.innerHTML = '';
+            clearContent();
+            pathStack = [];
+            updateBreadcrumbs();
+            
+            for (const sectionName in data) {
+                const btn = createButton(sectionName, 'section-btn', () => {
+                    pathStack = [sectionName];
+                    updateBreadcrumbs();
+                    showLevels(sectionName);
+                }, 'fas fa-graduation-cap');
+                containerSections.appendChild(btn);
+            }
+        }
+        
+        function showLevels(sectionName) {
+            contentArea.innerHTML = '';
+            containerSections.querySelectorAll('button').forEach(b => {
+                b.disabled = false;
+            });
+            
+            const levels = data[sectionName].المستويات;
+            for (const levelName in levels) {
+                const btn = createButton(levelName, 'level-btn', () => {
+                    pathStack = [sectionName, levelName];
+                    updateBreadcrumbs();
+                    showTerms(sectionName, levelName);
+                }, 'fas fa-layer-group');
+                contentArea.appendChild(btn);
+            }
+            
+            // زر رجوع للأقسام
+            contentArea.appendChild(createButton('رجوع للأقسام', 'section-btn back-btn', () => {
+                pathStack = [];
+                updateBreadcrumbs();
+                showSections();
+            }, 'fas fa-arrow-right'));
+        }
+        
+        function showTerms(sectionName, levelName) {
+            contentArea.innerHTML = '';
+            const levels = data[sectionName].المستويات;
+            
+            for (const termName in levels[levelName]) {
+                const btn = createButton(termName, 'term-btn', () => {
+                    pathStack = [sectionName, levelName, termName];
+                    updateBreadcrumbs();
+                    showSubjects(sectionName, levelName, termName);
+                }, 'fas fa-calendar-alt');
+                contentArea.appendChild(btn);
+            }
+            
+            // زر رجوع للمستويات
+            contentArea.appendChild(createButton('رجوع للمستويات', 'level-btn back-btn', () => {
+                pathStack.pop();
+                updateBreadcrumbs();
+                showLevels(sectionName);
+            }, 'fas fa-arrow-right'));
+        }
+        
+        function showSubjects(sectionName, levelName, termName) {
+            contentArea.innerHTML = '';
+            const subjects = data[sectionName].المستويات[levelName][termName];
+            
+            if(subjects.length === 0) {
+                contentArea.innerHTML = '<div class="empty-message"><i class="fas fa-book-open"></i><br>لا توجد مواد لهذا الترم</div>';
+            } else {
+                subjects.forEach(subject => {
+                    const btn = createButton(subject, 'subject-btn', () => {
+                        pathStack = [sectionName, levelName, termName, subject];
+                        updateBreadcrumbs();
+                        showSubjectDetails(subject);
+                    }, 'fas fa-book');
+                    contentArea.appendChild(btn);
+                });
+            }
+            
+            // زر رجوع للترم
+            contentArea.appendChild(createButton('رجوع للترم', 'term-btn back-btn', () => {
+                pathStack.pop();
+                updateBreadcrumbs();
+                showTerms(sectionName, levelName);
+            }, 'fas fa-arrow-right'));
+        }
+        
+        function showSubjectDetails(subjectName) {
+            const isAdmin = isAdminLoggedIn;
+            
+            // ملفات وهمية للعرض
+            const files = [
+                { id: 1, name: "ملخص المادة", size: "2.1 MB", date: "2023-05-20", icon: "fas fa-file-pdf" },
+                { id: 2, name: "محاضرة 1", size: "5.3 MB", date: "2023-05-15", icon: "fas fa-file-video" },
+                { id: 3, name: "تمارين عملية", size: "1.7 MB", date: "2023-05-10", icon: "fas fa-file-word" }
+            ];
+            
+            let filesHTML = '';
+            files.forEach(file => {
+                filesHTML += `
+                    <div class="file-item">
+                        <a href="#">
+                            <i class="${file.icon}"></i> ${file.name}
+                        </a>
+                        <span class="file-date">${file.date} (${file.size})</span>
+                        ${isAdmin ? `<i class="fas fa-trash delete-file" onclick="deleteFile(${file.id})" title="حذف الملف"></i>` : ''}
+                    </div>
+                `;
+            });
+            
+            contentArea.innerHTML = `
+                <div class="subject-header">
+                    <h2><i class="fas fa-book"></i> ${subjectName}</h2>
+                    <p>المادة: ${pathStack[3]} | المستوى: ${pathStack[1]} | الترم: ${pathStack[2]}</p>
+                </div>
+                
+                <div class="subject-actions">
+                    <button class="action-btn lectures"><i class="fas fa-chalkboard"></i> المحاضرات</button>
+                    <button class="action-btn summaries"><i class="fas fa-file-alt"></i> الملخصات</button>
+                    <button class="action-btn exams"><i class="fas fa-file-signature"></i> نماذج الاختبارات</button>
+                    <button class="action-btn practicals"><i class="fas fa-flask"></i> التمارين والعملي</button>
+                    ${isAdmin ? '<button class="action-btn upload" onclick="document.getElementById(\'uploadForm\').style.display=\'block\'; handleGoogleSignIn()"><i class="fas fa-upload"></i> رفع ملف جديد</button>' : ''}
+                </div>
+                
+                <div class="upload-form" id="uploadForm" style="display: none;">
+                    <h3><i class="fas fa-upload"></i> رفع ملف جديد</h3>
+                    <input type="text" id="fileName" placeholder="اسم الملف">
+                    <textarea id="fileDescription" placeholder="وصف الملف"></textarea>
+                    <input type="file" id="fileInput">
+                    <button onclick="uploadFile()"><i class="fas fa-cloud-upload-alt"></i> رفع الملف</button>
+                </div>
+                
+                <div class="files-list">
+                    <h3><i class="fas fa-file-download"></i> الملفات المتاحة:</h3>
+                    ${filesHTML}
+                </div>
+            `;
+            
+            // زر رجوع للمواد
+            contentArea.appendChild(createButton('رجوع للمواد', 'subject-btn back-btn', () => {
+                pathStack.pop();
+                updateBreadcrumbs();
+                const [sectionName, levelName, termName] = pathStack;
+                showSubjects(sectionName, levelName, termName);
+            }, 'fas fa-arrow-right'));
+        }
+
+        // تسجيل دخول المشرف
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if(username === 'admin' && password === 'taizengforbetter') {
+                isAdminLoggedIn = true;
+                document.getElementById('adminOptions').style.display = 'block';
+                alert('تم تسجيل الدخول بنجاح! مرحبًا بك مشرفًا');
+                renderNews();
+                
+                // تحديث الصفحة الحالية إذا كانت مادة
+                if (pathStack.length === 4) {
+                    showSubjectDetails(pathStack[3]);
+                }
+            } else {
+                alert('اسم المستخدم أو كلمة المرور غير صحيحة!');
+            }
+        }
+        
+        // عرض الأخبار
+        function renderNews() {
+            newsContainer.innerHTML = '';
+            
+            news.forEach(item => {
+                const newsElement = document.createElement('div');
+                newsElement.className = 'news-item';
+                
+                if (isAdminLoggedIn) {
+                    newsElement.innerHTML = `
+                        <div class="news-actions">
+                            <div class="edit-news" onclick="editNews(${item.id})">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <div class="delete-news" onclick="deleteNews(${item.id})">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                newsElement.innerHTML += `
+                    <h3>${item.title}</h3>
+                    <p>${item.content}</p>
+                    <span class="news-date"><i class="far fa-calendar"></i> ${item.date}</span>
+                `;
+                
+                newsContainer.appendChild(newsElement);
+            });
+        }
+
+        // تحرير خبر
+        function editNews(id) {
+            const newsItem = news.find(item => item.id === id);
+            if (newsItem) {
+                const title = prompt("عدل عنوان الخبر:", newsItem.title);
+                if (title !== null) {
+                    const content = prompt("عدل محتوى الخبر:", newsItem.content);
+                    if (content !== null) {
+                        newsItem.title = title;
+                        newsItem.content = content;
+                        localStorage.setItem('university_news', JSON.stringify(news));
+                        renderNews();
+                        alert('تم تحديث الخبر بنجاح!');
+                    }
+                }
+            }
+        }
+
+        // حذف خبر
+        function deleteNews(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الخبر؟')) {
+                news = news.filter(item => item.id !== id);
+                localStorage.setItem('university_news', JSON.stringify(news));
+                renderNews();
+                alert('تم حذف الخبر بنجاح!');
+            }
+        }
+
+        // إضافة خبر جديد
+        function addNews() {
+            const title = prompt("أدخل عنوان الخبر:");
+            if (title) {
+                const content = prompt("أدخل محتوى الخبر:");
+                if (content) {
+                    const newNews = {
+                        id: Date.now(),
+                        title: title,
+                        content: content,
+                        date: new Date().toLocaleDateString('ar-EG')
+                    };
+                    news.unshift(newNews);
+                    localStorage.setItem('university_news', JSON.stringify(news));
+                    renderNews();
+                    alert('تم نشر الخبر بنجاح!');
+                }
+            }
+        }
+        
+        // إضافة تأثيرات للعناصر عند التمرير
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.fade-in');
+            
+            sections.forEach(section => {
+                const sectionPosition = section.getBoundingClientRect().top;
+                const screenPosition = window.innerHeight / 1.3;
+                
+                if(sectionPosition < screenPosition) {
+                    section.style.opacity = 1;
+                    section.style.transform = 'translateY(0)';
+                }
+            });
+        });
+        
+        // تهيئة التطبيق
+        document.addEventListener('DOMContentLoaded', function() {
+            // تهيئة Google API
+            initGoogleAPI();
+            renderNews();
+            
+            // تهيئة تأثيرات العناصر
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach(el => {
+                el.style.opacity = 0;
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            });
+            
+            setTimeout(() => {
+                fadeElements.forEach((el, index) => {
+                    setTimeout(() => {
+                        el.style.opacity = 1;
+                        el.style.transform = 'translateY(0)';
+                    }, 200 * index);
+                });
+            }, 300);
+            
+            // إظهار نظام التخصصات
+            document.getElementById('departmentsBtn').addEventListener('click', function() {
+                const system = document.getElementById('academicSystem');
+                system.style.display = 'block';
+                showSections();
+            });
+            
+            // منع إرسال الفورم عند تسجيل الدخول
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                login();
+            });
+            
+            // نشر أخبار
+            document.getElementById('publishNews').addEventListener('click', addNews);
+            
+            // رفع المحاضرات
+            document.getElementById('uploadLectures').addEventListener('click', function() {
+                if (pathStack.length === 4) {
+                    document.getElementById('uploadForm').style.display = 'block';
+                    handleGoogleSignIn();
+                } else {
+                    alert('الرجاء اختيار مادة أولاً');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
