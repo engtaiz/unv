@@ -1224,12 +1224,7 @@
             }
         ];
   
-            // إظهار نظام التخصصات
-            document.getElementById('departmentsBtn').addEventListener('click', function() {
-                const system = document.getElementById('academicSystem');
-                system.style.display = 'block';
-                showSections();
-            });
+          
 <!-- المكتبة الأساسية -->
   <script src="https://apis.google.com/js/api.js"></script>
   
@@ -1702,7 +1697,12 @@ window.addEventListener('load', async () => {
                     }, 200 * index);
                 });
             }, 300);
-            
+              // إظهار نظام التخصصات
+            document.getElementById('departmentsBtn').addEventListener('click', function() {
+                const system = document.getElementById('academicSystem');
+                system.style.display = 'block';
+                showSections();
+            });
             
             // منع إرسال الفورم عند تسجيل الدخول
             document.getElementById('loginForm').addEventListener('submit', function(e) {
