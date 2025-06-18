@@ -1223,7 +1223,14 @@
                 date: "2025-05-05"
             }
         ];
-  <!-- المكتبة الأساسية -->
+  
+            // إظهار نظام التخصصات
+            document.getElementById('departmentsBtn').addEventListener('click', function() {
+                const system = document.getElementById('academicSystem');
+                system.style.display = 'block';
+                showSections();
+            });
+<!-- المكتبة الأساسية -->
   <script src="https://apis.google.com/js/api.js"></script>
   
   <!-- مكتبة المصادقة -->
@@ -1233,13 +1240,6 @@
   <script src="https://apis.google.com/js/client.js"></script>
 
     <script src="https://apis.google.com/js/api.js" async defer></script>
-
-            // إظهار نظام التخصصات
-            document.getElementById('departmentsBtn').addEventListener('click', function() {
-                const system = document.getElementById('academicSystem');
-                system.style.display = 'block';
-                showSections();
-            });
 
         
         // إعدادات Google Drive API (استبدل هذه القيم بمفاتيحك الخاصة)
