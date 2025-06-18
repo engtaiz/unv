@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام الملفات الأكاديمية - كلية الهندسة جامعة تعز</title>
@@ -1228,46 +1229,144 @@
         const DRIVE_FOLDER_ID = '1HN8gM4RYmq6XIKzqhVzsGvWOefV_7kC3';
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-        // تهيئة Google API
-        function initGoogleAPI() {
-            gapi.load('client:auth2', () => {
-                gapi.client.init({
-                    apiKey: GOOGLE_API_KEY,
-                    clientId: GOOGLE_CLIENT_ID,
-                    scope: SCOPES,
-                    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
-                }).then(() => {
-                    gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-                    updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-                }).catch(err => {
-                    console.error('Error initializing Google API:', err);
-                    gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> خطأ في تهيئة Google Drive API';
-                });
-            });
-        }
+// ======== التعديل 1: تأخير التهيئة حتى تحميل المكتبة ========
+// دالة للتحقق من جاهزية gapi
+function waitForGapi() {
+  return new Promise((resolve) => {
+    if (window.gapi) return resolve();
+    
+    const check = () => {
+      if (window.gapi) {
+        clearInterval(interval);
+        resolve();
+      }
+    };
+    
+    const interval = setInterval(check, 100);
+  });
+}
 
-        // تحديث حالة تسجيل الدخول
-        function updateSigninStatus(isSignedIn) {
-            if (isSignedIn) {
-                googleAccessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
-                gdriveStatus.className = 'gdrive-status gdrive-connected';
-                gdriveStatus.innerHTML = '<i class="fas fa-check-circle"></i> متصل بـ Google Drive بنجاح';
-            } else {
-                googleAccessToken = null;
-                gdriveStatus.className = 'gdrive-status gdrive-disconnected';
-                gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> غير متصل بـ Google Drive';
-            }
-        }
+// ======== التعديل 2: تحسين دالة التهيئة ========
+// تهيئة Google API (نسخة محسنة)
+async function initGoogleAPI() {
+  try {
+    // انتظر تحميل مكتبة gapi
+    await waitForGapi();
+    
+    // تحميل وحدة client:auth2
+    await new Promise((resolve, reject) => {
+      gapi.load('client:auth2', {
+        callback: resolve,
+        onerror: reject,
+        timeout: 5000,
+        ontimeout: () => reject(new Error('انتهت المهلة في تحميل وحدة المصادقة'))
+      });
+    });
 
-        // تسجيل الدخول إلى Google
-        function handleGoogleSignIn() {
-            gapi.auth2.getAuthInstance().signIn().then(() => {
-                console.log('تم تسجيل الدخول بنجاح');
-            }).catch(err => {
-                console.error('Error signing in:', err);
-                alert('حدث خطأ أثناء تسجيل الدخول إلى Google Drive');
-            });
-        }
+    // تهيئة العميل
+    await gapi.client.init({
+      apiKey: GOOGLE_API_KEY,
+      clientId: GOOGLE_CLIENT_ID,
+      scope: SCOPES,
+      discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+    });
+
+    // الاستماع لتغييرات حالة تسجيل الدخول
+    gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+    updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+    
+    console.log('تم تهيئة Google API بنجاح');
+  } catch (err) {
+    console.error('خطأ في تهيئة Google API:', err);
+    if (gdriveStatus) {
+      gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> فشل التهيئة: ' + err.message;
+    }
+  }
+}
+
+// ======== التعديل 3: إضافة تحقق من اتصال Drive ========
+// تحديث حالة تسجيل الدخول (مع التحقق الفعلي من الاتصال)
+async function updateSigninStatus(isSignedIn) {
+  if (!gdriveStatus) return;
+
+  if (isSignedIn) {
+    try {
+      googleAccessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
+      
+      // التحقق الفعلي من اتصال Drive
+      const connected = await testDriveConnection();
+      
+      if (connected) {
+        gdriveStatus.className = 'gdrive-status gdrive-connected';
+        gdriveStatus.innerHTML = '<i class="fas fa-check-circle"></i> متصل بـ Google Drive بنجاح';
+      } else {
+        gdriveStatus.className = 'gdrive-status gdrive-warning';
+        gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> تم الدخول لكن فشل الاتصال بـ Drive';
+      }
+    } catch (error) {
+      console.error('خطأ في تحديث الحالة:', error);
+      gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> خطأ في تحديث حالة الاتصال';
+    }
+  } else {
+    googleAccessToken = null;
+    gdriveStatus.className = 'gdrive-status gdrive-disconnected';
+    gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> غير متصل بـ Google Drive';
+  }
+}
+
+// اختبار اتصال Google Drive فعليًا
+async function testDriveConnection() {
+  try {
+    const response = await gapi.client.drive.files.list({
+      pageSize: 1,
+      fields: 'files(id, name)'
+    });
+    return response.status === 200;
+  } catch (err) {
+    console.error('فشل اختبار اتصال Drive:', err);
+    return false;
+  }
+}
+
+// ======== التعديل 4: تحسين دالة تسجيل الدخول ========
+// تسجيل الدخول إلى Google (نسخة محسنة)
+async function handleGoogleSignIn() {
+  try {
+    // تأكد من تهيئة gapi أولاً
+    if (!gapi.auth2) {
+      await initGoogleAPI();
+    }
+    
+    await gapi.auth2.getAuthInstance().signIn();
+    console.log('تم تسجيل الدخول بنجاح');
+    
+    // إعطاء وقت لتحديث الحالة
+    setTimeout(() => {
+      if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
+        alert('حسابك مسجل لكن التطبيق لم يتلقى التأكيد. حاول تحديث الصفحة.');
+      }
+    }, 2000);
+    
+  } catch (err) {
+    console.error('خطأ في تسجيل الدخول:', err);
+    
+    // معالجة أخطاء محددة
+    if (err.error === 'popup_closed_by_user') {
+      alert('تم إغلاق نافذة التسجيل. يرجى المحاولة مرة أخرى.');
+    } else if (err.error === 'access_denied') {
+      alert('تم رفض الإذن. تحتاج إلى الموافقة على الصلاحيات.');
+    } else {
+      alert('حدث خطأ غير متوقع: ' + (err.details || err.error));
+    }
+  }
+}
+
+// ======== التعديل 5: تهيئة التطبيق بشكل آمن ========
+// بدء التهيئة عند تحميل الصفحة
+window.addEventListener('DOMContentLoaded', () => {
+  // تأخير التهيئة قليلاً لضمان تحميل المكتبة
+  setTimeout(initGoogleAPI, 300);
+});
 
         // وظائف النظام الأكاديمي
         function clearContent() {
