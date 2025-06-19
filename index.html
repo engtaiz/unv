@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -125,7 +126,8 @@
         #academicSystem {
             display: none;
             background: rgba(255, 255, 255, 0.92);
-            border-radius: 15px;
+
+border-radius: 15px;
             padding: 20px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
             margin: 20px auto;
@@ -265,7 +267,8 @@
             margin-bottom: 10px;
             color: #2c3e50;
             display: flex;
-            align-items: center;
+
+align-items: center;
             gap: 8px;
         }
         
@@ -419,7 +422,8 @@
             left: 15px;
             display: flex;
             gap: 10px;
-        }
+
+}
         
         .edit-news, .delete-news {
             width: 30px;
@@ -572,7 +576,8 @@
             font-size: 1.3rem;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #1abc9c;
+
+border-bottom: 2px solid #1abc9c;
         }
         
         .footer-links a {
@@ -723,7 +728,8 @@
                 <h1>جامعة تعز</h1>
                 <p>كلية الهندسة - التكنولوجيا والابتكار</p>
             </div>
-        </div>
+
+</div>
         
         <nav>
             <ul>
@@ -817,7 +823,7 @@
             </div>
             
             <div class="admin-option" onclick="alert('نافذة تعديل التخصصات والمواد ستفتح هنا')">
-                <i class="fas fa-book"></i>
+<i class="fas fa-book"></i>
                 <h3>تعديل التخصصات والمواد</h3>
                 <p>إدارة التخصصات والمواد الدراسية</p>
             </div>
@@ -837,7 +843,7 @@
                 <div class="footer-links">
                     <a href="#"><i class="fas fa-users"></i> أعضاء الاتحاد</a>
                     <a href="https://xlserver.al-emtiaz.net/XLWeb/Default.aspx" target="_blank"><i class="fas fa-star"></i> موقع الامتياز</a>
-                    <a href="#"><i class="fas fa-info-circle"></i> منشئ الموقع: المهندس/ محمد طارق القرشي - طالب هندسة ميكاترونكس</a>
+                    <a href="#" id="creatorBtn"><i class="fas fa-info-circle"></i> منشئ الموقع</a>
                     <a href="#"><i class="fab fa-telegram"></i> جروبات تيليغرام</a>
                 </div>
             </div>
@@ -847,7 +853,7 @@
                 <div id="delegatesList" style="margin-bottom: 15px;">
                     <!-- سيتم عرض المناديب هنا ديناميكيًا -->
                 </div>
-                <button class="footer-btn" onclick="showDelegates()">
+                <button class="footer-btn" id="showDelegatesBtn">
                     <i class="fas fa-user-tie"></i> عرض المناديب
                 </button>
             </div>
@@ -867,7 +873,7 @@
     </footer>
     
     <!-- نافذة عرض المناديب -->
-    <div id="delegatesModal" class="modal" style="display:none;">
+    <div id="delegatesModal" class="modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2>مناديب الأقسام</h2>
@@ -880,7 +886,7 @@
     </div>
     
     <!-- نافذة إدارة الجدول -->
-    <div id="scheduleModal" class="modal" style="display:none;">
+    <div id="scheduleModal" class="modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2>إدارة الجدول الدراسي</h2>
@@ -888,6 +894,25 @@
             </div>
             <div id="scheduleContent">
                 <!-- محتوى الجدول هنا -->
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة معلومات منشئ الموقع -->
+    <div id="creatorModal" class="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>معلومات منشئ الموقع</h2>
+                <button onclick="document.getElementById('creatorModal').style.display='none'"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="text-align: center;">
+                <img src="https://via.placeholder.com/150" alt="صورة منشئ الموقع" style="width:150px; height:150px; border-radius:50%; margin-bottom:20px;">
+
+<h3>المهندس/ محمد طارق القرشي</h3>
+                <p>طالب هندسة ميكاترونكس</p>
+                <p>جامعة تعز - كلية الهندسة</p>
+                <p>رقم الجوال: 777777802</p>
+                <p>البريد الإلكتروني: m.alkorshy@example.com</p>
             </div>
         </div>
     </div>
@@ -984,7 +1009,8 @@
                     "مستوى 3": {
                         "الترم 1": [],
                         "الترم 2": [
-                            "هندسه البرمجيات",
+
+"هندسه البرمجيات",
                             "معماريه الحاسوب",
                             "برمجه الأحداث المساقه",
                             "ويب 2",
@@ -1028,7 +1054,7 @@
                     },
                     "مستوى 2": {
                         "الترم 1": [],
-                        "الترm 2": [
+                        "الترم 2": [
                             "نظم تشغيل",
                             "البرمجه كائنيه التوجه",
                             "بنيه وتنظيم الحاسبات",
@@ -1086,7 +1112,8 @@
                         "الترم 1": [],
                         "الترم 2": [
                             "تحليل عددي",
-                            "بحوث عمليات",
+
+"بحوث عمليات",
                             "مقاومه المواد",
                             "التصميم المنطقي الرقمي",
                             "عمليات صناعيه",
@@ -1187,7 +1214,8 @@
                         "الترم 2": [
                             "تكامل",
                             "فيزياء",
-                            "رسم هندسي",
+
+"رسم هندسي",
                             "جبر خطي",
                             "لغه انجليزيه",
                             "لغه عربيه",
@@ -1227,7 +1255,7 @@
                         ]
                     },
                     "مستوى 5": {
-                        "الترm 1": [],
+                        "الترم 1": [],
                         "الترم 2": [
                             "روبوتات واتمته",
                             "تصميم انظمه الميكاترونيات",
@@ -1273,13 +1301,14 @@
                 "مستوى 2": { name: "طارق محمد", phone: "777777798" },
                 "مستوى 3": { name: "سعد عبدالكريم", phone: "777777799" },
                 "مستوى 4": { name: "حسين أحمد", phone: "777777800" },
-                "مستوى 5": { name: "محمود خليل", phone: "777777801" }
+
+"مستوى 5": { name: "محمود خليل", phone: "777777801" }
             },
             "ميكاترونكس": {
                 "مستوى 1": { name: "محمد طارق القرشي", phone: "777777802" },
                 "مستوى 2": { name: "عبدالله وائل", phone: "777777803" },
                 "مستوى 3": { name: "ياسين محمود", phone: "777777804" },
-                "mستوى 4": { name: "بكر سليمان", phone: "777777805" },
+                "مستوى 4": { name: "بكر سليمان", phone: "777777805" },
                 "مستوى 5": { name: "أنس عمر", phone: "777777806" }
             }
         };
@@ -1296,6 +1325,13 @@
         const GOOGLE_API_KEY = 'AIzaSyAhno4TNDmXMdfos8YS61PzaAtoxnF_LG8';
         const DRIVE_FOLDER_ID = '1HN8gM4RYmq6XIKzqhVzsGvWOefV_7kC3';
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+        // ======== متغيرات التنقل في النظام الأكاديمي ======== //
+        let pathStack = [];
+        let currentSection = null;
+        let currentLevel = null;
+        let currentTerm = null;
+        let currentSubject = null;
 
         // ======== Google Drive API Functions ======== //
         let gapiLoaded = false;
@@ -1359,7 +1395,8 @@
                     if (connected) {
                         gdriveStatus.className = 'gdrive-status gdrive-connected';
                         gdriveStatus.innerHTML = '<i class="fas fa-check-circle"></i> متصل بـ Google Drive بنجاح';
-                    } else {
+
+} else {
                         gdriveStatus.className = 'gdrive-status gdrive-warning';
                         gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> تم الدخول لكن فشل الاتصال بـ Drive';
                     }
@@ -1458,7 +1495,8 @@
         // ======== إدارة الجدول الدراسي مع Google Drive ======== //
         async function uploadSchedule() {
             const fileInput = document.getElementById('scheduleUpload');
-            if (!fileInput.files.length) {
+
+if (!fileInput.files.length) {
                 alert('الرجاء اختيار صورة للجدول');
                 return;
             }
@@ -1504,36 +1542,36 @@
         }
 
         function showScheduleManager() {
-            let html = `
+            let html = 
                 <div style="text-align:center;">
                     <h3>الجدول الدراسي الحالي</h3>
-            `;
+            ;
             
             if (currentSchedule) {
-                html += `
+                html += 
                     <a href="${currentSchedule.webViewLink}" target="_blank" style="display:block; margin:15px 0;">
                         <i class="fas fa-external-link-alt"></i> فتح الجدول في Google Drive
                     </a>
                     <img src="${currentSchedule.webContentLink}" style="max-width:100%; border:1px solid #ddd; border-radius:5px; margin:15px 0;">
-                    ${isAdminLoggedIn ? `
+                    ${isAdminLoggedIn ? 
                     <button onclick="deleteSchedule()" style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; margin:5px;">
                         <i class="fas fa-trash"></i> حذف الجدول
                     </button>
-                    ` : ''}
-                `;
+                     : ''}
+                ;
             } else {
                 html += <p>لا يوجد جدول معروض حالياً</p>;
             }
             
             if (isAdminLoggedIn) {
-                html += `
+                html += 
                     <hr style="margin:20px 0;">
                     <h3>رفع جدول جديد</h3>
                     <input type="file" id="scheduleUpload" accept="image/*" style="margin:15px 0;">
                     <button onclick="uploadSchedule()" style="background:#2c3e50; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">
                         <i class="fas fa-upload"></i> رفع الجدول
                     </button>
-                `;
+                ;
             }
             
             html += '</div>';
@@ -1542,9 +1580,389 @@
             document.getElementById('scheduleModal').style.display = 'block';
         }
 
-        // ======== بقية الكود (النظام الأكاديمي، الأخبار، المناديب) ======== //
-        // ... (يحتوي على كود النظام الأكاديمي، الأخبار، المناديب كما في الإصدار السابق) ...
-        // تم إزالة هذا الجزء للاختصار، لكن يجب تضمينه كما هو في الكود السابق
+        // ======== النظام الأكاديمي ======== //
+        function showSections() { 
+const sectionsDiv = document.getElementById('sections');
+            sectionsDiv.innerHTML = '';
+            
+            for (const section in data) {
+                const btn = document.createElement('button');
+                btn.className = 'section-btn';
+                btn.innerHTML = <i class="fas fa-building"></i> ${section};
+                btn.onclick = () => showLevels(section);
+                sectionsDiv.appendChild(btn);
+            }
+        }
+
+        function showLevels(section) {
+            currentSection = section;
+            pathStack.push({ type: 'section', name: section });
+            updateBreadcrumbs();
+            
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';
+            
+            const levelsDiv = document.createElement('div');
+            levelsDiv.className = 'levels-container';
+            
+            for (const level in data[section].المستويات) {
+                const btn = document.createElement('button');
+                btn.className = 'level-btn';
+                btn.innerHTML = <i class="fas fa-layer-group"></i> ${level};
+                btn.onclick = () => showTerms(section, level);
+                levelsDiv.appendChild(btn);
+            }
+            
+            contentArea.appendChild(levelsDiv);
+        }
+
+        function showTerms(section, level) {
+            currentLevel = level;
+            pathStack.push({ type: 'level', name: level });
+            updateBreadcrumbs();
+            
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';
+            
+            const termsDiv = document.createElement('div');
+            termsDiv.className = 'terms-container';
+            
+            for (const term in data[section].المستويات[level]) {
+                const btn = document.createElement('button');
+                btn.className = 'term-btn';
+                btn.innerHTML = <i class="fas fa-calendar-alt"></i> ${term};
+                btn.onclick = () => showSubjects(section, level, term);
+                termsDiv.appendChild(btn);
+            }
+            
+            contentArea.appendChild(termsDiv);
+        }
+
+        function showSubjects(section, level, term) {
+            currentTerm = term;
+            pathStack.push({ type: 'term', name: term });
+            updateBreadcrumbs();
+            
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';
+            
+            const subjects = data[section].المستويات[level][term];
+            
+            if (subjects.length === 0) {
+                contentArea.innerHTML = '<div class="empty-message">لا توجد مواد دراسية لهذا الترم</div>';
+                return;
+            }
+            
+            const subjectsDiv = document.createElement('div');
+            subjectsDiv.className = 'subjects-container';
+            
+            subjects.forEach(subject => {
+                const btn = document.createElement('button');
+                btn.className = 'subject-btn';
+                btn.innerHTML = <i class="fas fa-book"></i> ${subject};
+                btn.onclick = () => showSubjectContent(section, level, term, subject);
+                subjectsDiv.appendChild(btn);
+            });
+            
+            contentArea.appendChild(subjectsDiv);
+        }
+
+        function showSubjectContent(section, level, term, subject) {
+            currentSubject = subject;
+            pathStack.push({ type: 'subject', name: subject });
+            updateBreadcrumbs();
+            
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <h2 style="color:#2c3e50; margin-bottom:20px;">${subject}</h2>
+
+<p style="margin-bottom:20px;">مادة من مواد قسم ${section} - ${level} - ${term}</p>
+                
+                <div class="subject-actions">
+                    <button class="action-btn lectures">
+                        <i class="fas fa-chalkboard-teacher"></i> المحاضرات
+                    </button>
+                    <button class="action-btn summaries">
+                        <i class="fas fa-file-alt"></i> الملخصات
+                    </button>
+                    <button class="action-btn exams">
+                        <i class="fas fa-file-signature"></i> نماذج اختبارات
+                    </button>
+                    <button class="action-btn practicals">
+                        <i class="fas fa-flask"></i> أعمال عملية
+                    </button>
+                    
+                    ${isAdminLoggedIn ? 
+                    <button class="action-btn upload" onclick="showUploadForm()">
+                        <i class="fas fa-upload"></i> رفع ملفات
+                    </button>
+                     : ''}
+                </div>
+                
+                <div id="uploadForm" style="display:none;">
+                    <div class="upload-form">
+                        <h3><i class="fas fa-upload"></i> رفع ملف جديد</h3>
+                        <input type="text" id="fileName" placeholder="اسم الملف">
+                        <textarea id="fileDescription" placeholder="وصف الملف"></textarea>
+                        <input type="file" id="fileInput">
+                        <button onclick="uploadFile()"><i class="fas fa-upload"></i> رفع الملف</button>
+                    </div>
+                </div>
+                
+                <div class="files-list">
+                    <h3><i class="fas fa-file"></i> الملفات المتاحة</h3>
+                    <div id="filesContainer">
+                        <!-- سيتم عرض الملفات هنا -->
+                    </div>
+                </div>
+            ;
+        }
+
+        function updateBreadcrumbs() {
+            const breadcrumbsDiv = document.getElementById('breadcrumbs');
+            let breadcrumbsHTML = '';
+            
+            pathStack.forEach((item, index) => {
+                if (index > 0) breadcrumbsHTML += ' <i class="fas fa-chevron-left"></i> ';
+                breadcrumbsHTML += <span>${item.name}</span>`;
+            });
+            
+            breadcrumbsDiv.innerHTML = breadcrumbsHTML;
+        }
+
+        function goBack() {
+            if (pathStack.length > 0) {
+                pathStack.pop();
+                
+                if (pathStack.length === 0) {
+                    // العودة إلى القائمة الرئيسية
+                    document.getElementById('contentArea').innerHTML = '';
+                    document.getElementById('breadcrumbs').innerHTML = 'اختر قسمًا من اليسار للبدء.';
+                    return;
+                }
+                
+                const lastItem = pathStack[pathStack.length - 1];
+                
+                switch (lastItem.type) {
+                    case 'section':
+                        showLevels(lastItem.name);
+                        break;
+                    case 'level':
+                        showTerms(currentSection, lastItem.name);
+                        break;
+                    case 'term':
+                        showSubjects(currentSection, currentLevel, lastItem.name);
+                        break;
+                    case 'subject':
+                        showSubjectContent(currentSection, currentLevel, currentTerm, lastItem.name);
+                        break;
+                }
+            }
+        }
+
+        function showUploadForm() {
+            document.getElementById('uploadForm').style.display = 'block';
+            handleGoogleSignIn();
+        }
+
+        async function uploadFile() {
+
+const fileName = document.getElementById('fileName').value;
+            const fileDescription = document.getElementById('fileDescription').value;
+            const fileInput = document.getElementById('fileInput');
+            
+            if (!fileName || !fileInput.files.length) {
+                alert('الرجاء إدخال اسم الملف واختيار ملف للرفع');
+                return;
+            }
+            
+            try {
+                const file = fileInput.files[0];
+                const uploadedFile = await uploadFileToDrive(file, fileName, fileDescription, DRIVE_FOLDER_ID);
+                
+                alert('تم رفع الملف بنجاح!');
+                document.getElementById('uploadForm').style.display = 'none';
+                // يمكنك هنا إضافة الملف إلى واجهة المستخدم
+                
+            } catch (error) {
+                console.error('فشل رفع الملف:', error);
+                alert('حدث خطأ أثناء رفع الملف. الرجاء المحاولة لاحقًا.');
+            }
+        }
+
+        // ======== إدارة الأخبار ======== //
+        function renderNews() {
+            const newsContainer = document.getElementById('newsContainer');
+            const news = JSON.parse(localStorage.getItem('news')) || [];
+            
+            if (news.length === 0) {
+                newsContainer.innerHTML = '<div class="empty-message">لا توجد أخبار لعرضها حالياً</div>';
+                return;
+            }
+            
+            newsContainer.innerHTML = '';
+            
+            news.forEach((item, index) => {
+                const newsItem = document.createElement('div');
+                newsItem.className = 'news-item';
+                newsItem.innerHTML = 
+                    ${isAdminLoggedIn ? 
+                    <div class="news-actions">
+                        <div class="edit-news" onclick="editNews(${index})"><i class="fas fa-edit"></i></div>
+                        <div class="delete-news" onclick="deleteNews(${index})"><i class="fas fa-trash"></i></div>
+                    </div>
+                     : ''}
+                    <h3>${item.title}</h3>
+                    <p>${item.content}</p>
+                    <span class="news-date">${new Date(item.date).toLocaleDateString('ar-EG')}</span>
+                ;
+                newsContainer.appendChild(newsItem);
+            });
+        }
+
+        function addNews() {
+            const title = prompt('أدخل عنوان الخبر:');
+            if (!title) return;
+            
+            const content = prompt('أدخل محتوى الخبر:');
+            if (!content) return;
+            
+            const news = JSON.parse(localStorage.getItem('news')) || [];
+            news.push({
+                title: title,
+                content: content,
+                date: new Date().toISOString()
+            });
+            
+            localStorage.setItem('news', JSON.stringify(news));
+            renderNews();
+            alert('تم نشر الخبر بنجاح!');
+        }
+
+        function editNews(index) {
+            const news = JSON.parse(localStorage.getItem('news')) || [];
+            if (index < 0 || index >= news.length) return;
+            
+            const item = news[index];
+            const newTitle = prompt('عدل عنوان الخبر:', item.title);
+            if (!newTitle) return;
+            
+            const newContent = prompt('عدل محتوى الخبر:', item.content);
+            if (!newContent) return;
+            
+            news[index] = {
+                title: newTitle,
+                content: newContent,
+                date: item.date
+            };
+            
+            localStorage.setItem('news', JSON.stringify(news));
+            renderNews();
+        }
+
+        function deleteNews(index) {
+            if (!confirm('هل أنت متأكد من حذف هذا الخبر؟')) return;
+            
+            const news = JSON.parse(localStorage.getItem('news')) || [];
+            if (index < 0 || index >= news.length) return;
+            
+            news.splice(index, 1);
+            localStorage.setItem('news', JSON.stringify(news));
+            renderNews();
+        }
+
+// ======== إدارة المناديب ======== //
+        function renderDelegatesList() {
+            const delegatesList = document.getElementById('delegatesList');
+            delegatesList.innerHTML = '';
+            
+            // عرض مناديب قسمين فقط في الصفحة الرئيسية للاختصار
+            let count = 0;
+            for (const section in delegates) {
+                if (count >= 2) break;
+                
+                const sectionDiv = document.createElement('div');
+                sectionDiv.style.marginBottom = '15px';
+                sectionDiv.innerHTML = <strong>${section}:</strong>;
+                
+                const ul = document.createElement('ul');
+                ul.style.paddingRight = '20px';
+                ul.style.marginTop = '5px';
+                
+                for (const level in delegates[section]) {
+                    const li = document.createElement('li');
+                    li.textContent = ${level}: ${delegates[section][level].name} (${delegates[section][level].phone});
+                    ul.appendChild(li);
+                }
+                
+                sectionDiv.appendChild(ul);
+                delegatesList.appendChild(sectionDiv);
+                count++;
+            }
+        }
+
+        function showDelegates() {
+            const delegatesContent = document.getElementById('delegatesContent');
+            delegatesContent.innerHTML = '';
+            
+            for (const section in delegates) {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.style.marginBottom = '25px';
+                sectionDiv.innerHTML = <h3 style="color:#2c3e50; border-bottom:2px solid #1abc9c; padding-bottom:5px;">${section}</h3>;
+                
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+                table.style.marginTop = '10px';
+                
+                // رأس الجدول
+                const thead = document.createElement('thead');
+                thead.innerHTML = 
+                    <tr style="background:#2c3e50; color:white;">
+                        <th style="padding:10px; text-align:right;">المستوى</th>
+                        <th style="padding:10px; text-align:right;">اسم المناديبة</th>
+                        <th style="padding:10px; text-align:right;">رقم الجوال</th>
+                    </tr>
+                ;
+                table.appendChild(thead);
+                
+                // جسم الجدول
+                const tbody = document.createElement('tbody');
+                for (const level in delegates[section]) {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid #ddd';
+                    tr.innerHTML = 
+                        <td style="padding:10px; text-align:right;">${level}</td>
+                        <td style="padding:10px; text-align:right;">${delegates[section][level].name}</td>
+                        <td style="padding:10px; text-align:right;">${delegates[section][level].phone}</td>
+                    ;
+                    tbody.appendChild(tr);
+                }
+                
+                table.appendChild(tbody);
+                sectionDiv.appendChild(table);
+                delegatesContent.appendChild(sectionDiv);
+            }
+            
+            document.getElementById('delegatesModal').style.display = 'block';
+        }
+
+        // ======== تسجيل الدخول ======== //
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username === 'admin' && password === 'taizengforbetter') {
+
+isAdminLoggedIn = true;
+                document.getElementById('adminOptions').style.display = 'block';
+                document.getElementById('loginForm').style.display = 'none';
+                renderNews();
+                alert('تم تسجيل الدخول بنجاح!');
+            } else {
+                alert('اسم المستخدم أو كلمة المرور غير صحيحة!');
+            }
+        }
 
         // ======== تهيئة التطبيق ======== //
         document.addEventListener('DOMContentLoaded', function() {
@@ -1556,9 +1974,14 @@
                 document.getElementById('scheduleBtn').addEventListener('click', showScheduleManager);
             }
             
-            // تهيئة بقية التطبيق
+            // تهيئة النظام الأكاديمي
+            document.getElementById('departmentsBtn').addEventListener('click', function() {
+                document.getElementById('academicSystem').style.display = 'block';
+                showSections();
+            });
+            
+            // تهيئة الأخبار
             renderNews();
-            showSections();
             
             // منع إرسال الفورم عند تسجيل الدخول
             document.getElementById('loginForm').addEventListener('submit', function(e) {
@@ -1577,6 +2000,14 @@
                 } else {
                     alert('الرجاء اختيار مادة أولاً');
                 }
+            });
+            
+            // عرض المناديب
+            document.getElementById('showDelegatesBtn').addEventListener('click', showDelegates);
+            
+            // عرض معلومات منشئ الموقع
+            document.getElementById('creatorBtn').addEventListener('click', function() {
+                document.getElementById('creatorModal').style.display = 'block';
             });
         });
     </script>
