@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -8,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://apis.google.com/js/api.js?onload=onGAPILoad" async defer></script>
     <style>
+   
         * {
             margin: 0;
             padding: 0;
@@ -917,7 +917,9 @@ border-bottom: 2px solid #1abc9c;
         </div>
     </div>
 
-    <script>
+    
+        // بيانات التخصصات والمناديب (ابقها كما هي)
+<script>
         // متغير لمعرفة إذا كان التطبيق جاهزاً
 let appInitialized = false;
         // بيانات التخصصات
@@ -1405,96 +1407,294 @@ function showTerms(section, level) {
         let googleAccessToken = null;
         const gdriveStatus = document.getElementById('gdriveStatus');
         let appInitialized = false;
-        // إعدادات Google Drive API
+        let pathStack = [];
+        let currentSection = null;
+        let currentLevel = null;
+        let currentTerm = null;
+
+        // إعدادات Google Drive API (ابقها كما هي)
+// إعدادات Google Drive API
         const GOOGLE_CLIENT_ID = '610677939149-4bai1rgeosad81djaaepu3rqtqce1gud.apps.googleusercontent.com';
         const GOOGLE_API_KEY = 'AIzaSyAhno4TNDmXMdfos8YS61PzaAtoxnF_LG8';
         const DRIVE_FOLDER_ID = '1HN8gM4RYmq6XIKzqhVzsGvWOefV_7kC3';
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-        // ======== متغيرات التنقل في النظام الأكاديمي ======== //
-        let pathStack = [];
-        let currentSection = null;
-        let currentLevel = null;
-        let currentTerm = null;
-        let currentSubject = null;
+        // ======== الدوال المعدلة ======== //
 
-        // ======== Google Drive API Functions ======== //
-       let gapiLoaded = false;
+        function showSections() {
+            const sectionsDiv = document.getElementById('sections');
+            sectionsDiv.innerHTML = '';
+            
+            const backBtn = document.createElement('button');
+            backBtn.className = 'back-btn';
+            backBtn.innerHTML = '<i class="fas fa-arrow-right"></i> رجوع';
+            backBtn.onclick = goBack;
+            sectionsDiv.appendChild(backBtn);
 
-function onGAPILoad() {
-    console.log('Google API loaded');
-    initGoogleAPI().catch(error => {
-        console.error('Failed to initialize Google API:', error);
-        initializeApp(); // <-- نستمر في تشغيل التطبيق حتى لو فشل Google API
-    });
-}
-
-async function initGoogleAPI() {
-    try {
-        await new Promise((resolve) => {
-            gapi.load('client:auth2', resolve);
-        });
-        
-        await gapi.client.init({
-            apiKey: GOOGLE_API_KEY,
-            clientId: GOOGLE_CLIENT_ID,
-            scope: SCOPES,
-            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
-        });
-        
-        console.log('Google API initialized');
-        gapiLoaded = true;
-        updateConnectionStatus();
-    } catch (error) {
-        console.error('Error initializing Google API:', error);
-        gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> مشكلة في اتصال Google Drive';
-    } finally {
-        initializeApp(); // <-- تهيئة التطبيق في جميع الأحوال
-    }
-}
-
-function initializeApp() {
-    if (appInitialized) return;
-    appInitialized = true;
-    
-    // تهيئة جميع وظائف التطبيق الأساسية
-    renderDelegatesList();
-    renderNews();
-    showSections();
-    
-    // إعداد مستمعات الأحداث
-    document.getElementById('departmentsBtn').addEventListener('click', function() {
-        document.getElementById('academicSystem').style.display = 'block';
-    });
-    
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        login();
-    });
-    
-    document.getElementById('showDelegatesBtn').addEventListener('click', showDelegates);
-    
-    document.getElementById('creatorBtn').addEventListener('click', function() {
-        document.getElementById('creatorModal').style.display = 'block';
-    });
-    
-    if (currentSchedule) {
-        document.getElementById('scheduleBtn').addEventListener('click', showScheduleManager);
-    }
-}
-
-// بدء التطبيق عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    // إذا لم يتم تحميل gapi بعد 3 ثوان، نبدأ التطبيق على أي حال
-    setTimeout(() => {
-        if (!appInitialized) {
-            console.log('Initializing app without Google API');
-            initializeApp();
+            for (const section in data) {
+                const btn = document.createElement('button');
+                btn.className = 'section-btn';
+                btn.innerHTML = <i class="fas fa-building"></i> ${section};
+                btn.onclick = () => {
+                    currentSection = section;
+                    pathStack = [{type: 'section', name: section}];
+                    showLevels(section);
+                };
+                sectionsDiv.appendChild(btn);
+            }
+            
+            document.getElementById('academicSystem').style.display = 'block';
+            document.getElementById('breadcrumbs').textContent = 'الأقسام الأكاديمية';
         }
-    }, 3000);
-});
-    
-        async function updateConnectionStatus() {
+
+        function showLevels(section) {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';
+            
+            const backBtn = document.createElement('button');
+            backBtn.className = 'back-btn';
+            backBtn.innerHTML = '<i class="fas fa-arrow-right"></i> رجوع';
+            backBtn.onclick = goBack;
+            contentArea.appendChild(backBtn);
+
+            for (const level in data[section].المستويات) {
+                const btn = document.createElement('button');
+                btn.className = 'level-btn';
+                btn.innerHTML = <i class="fas fa-layer-group"></i> ${level};
+                btn.onclick = () => {
+                    currentLevel = level;
+                    pathStack.push({type: 'level', name: level});
+                    showTerms(section, level);
+                };
+                contentArea.appendChild(btn);
+            }
+            
+            updateBreadcrumbs();
+        }
+
+        function showTerms(section, level) {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';
+            
+            const backBtn = document.createElement('button');
+            backBtn.className = 'back-btn';
+            backBtn.innerHTML = '<i class="fas fa-arrow-right"></i> رجوع';
+            backBtn.onclick = goBack;
+            contentArea.appendChild(backBtn);
+
+            for (const term in data[section].المستويات[level]) {
+                const btn = document.createElement('button');
+                btn.className = 'term-btn';
+                btn.innerHTML = <i class="fas fa-calendar-alt"></i> ${term};
+                btn.onclick = () => {
+                    currentTerm = term;
+                    pathStack.push({type: 'term', name: term});
+                    showSubjects(section, level, term);
+                };
+                contentArea.appendChild(btn);
+            }
+            
+            updateBreadcrumbs();
+        }
+
+        function showSubjects(section, level, term) {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';
+            
+            const backBtn = document.createElement('button');
+            backBtn.className = 'back-btn';
+            backBtn.innerHTML = '<i class="fas fa-arrow-right"></i> رجوع';
+            backBtn.onclick = goBack;
+            contentArea.appendChild(backBtn);
+
+            const subjects = data[section].المستويات[level][term];
+            
+            if (subjects.length === 0) {
+                contentArea.innerHTML = '<div class="empty-message">لا توجد مواد دراسية لهذا الترم</div>';
+                return;
+            }
+            
+            subjects.forEach(subject => {
+                const btn = document.createElement('button');
+                btn.className = 'subject-btn';
+                btn.innerHTML = <i class="fas fa-book"></i> ${subject};
+                btn.onclick = () => {
+                    pathStack.push({type: 'subject', name: subject});
+                    showSubjectContent(subject);
+                };
+                contentArea.appendChild(btn);
+            });
+            
+            updateBreadcrumbs();
+        }
+
+        function showSubjectContent(subject) {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <h2 style="color:#2c3e50; margin-bottom:20px;">${subject}</h2>
+                <p style="margin-bottom:20px;">مادة من مواد قسم ${currentSection} - ${currentLevel} - ${currentTerm}</p>
+                
+                <div class="subject-actions">
+                    <button class="action-btn lectures">
+                        <i class="fas fa-chalkboard-teacher"></i> المحاضرات
+                    </button>
+                    <button class="action-btn summaries">
+                        <i class="fas fa-file-alt"></i> الملخصات
+                    </button>
+                    <button class="action-btn exams">
+                        <i class="fas fa-file-signature"></i> نماذج اختبارات
+                    </button>
+                    <button class="action-btn practicals">
+                        <i class="fas fa-flask"></i> أعمال عملية
+                    </button>
+                    
+                    ${isAdminLoggedIn ? `
+                    <button class="action-btn upload" onclick="showUploadForm()">
+                        <i class="fas fa-upload"></i> رفع ملفات
+                    </button>
+                    ` : ''}
+                </div>
+                
+                <div id="uploadForm" style="display:none;">
+                    <div class="upload-form">
+                        <h3><i class="fas fa-upload"></i> رفع ملف جديد</h3>
+                        <input type="text" id="fileName" placeholder="اسم الملف">
+                        <textarea id="fileDescription" placeholder="وصف الملف"></textarea>
+                        <input type="file" id="fileInput">
+                        <button onclick="uploadFile()"><i class="fas fa-upload"></i> رفع الملف</button>
+                    </div>
+                </div>
+                
+                <div class="files-list">
+                    <h3><i class="fas fa-file"></i> الملفات المتاحة</h3>
+                    <div id="filesContainer">
+                        <!-- سيتم عرض الملفات هنا -->
+                    </div>
+                </div>
+            `;
+            
+            updateBreadcrumbs();
+        }
+
+        function goBack() {
+            if (pathStack.length > 0) {
+                pathStack.pop();
+                if (pathStack.length === 0) {
+                    document.getElementById('contentArea').innerHTML = '';
+                    document.getElementById('breadcrumbs').textContent = 'اختر قسمًا للبدء';
+                    return;
+                }
+                const last = pathStack[pathStack.length-1];
+                if (last.type === 'section') showLevels(last.name);
+                else if (last.type === 'level') showTerms(currentSection, last.name);
+                else if (last.type === 'term') showSubjects(currentSection, currentLevel, last.name);
+            }
+        }
+
+        function updateBreadcrumbs() {
+            const breadcrumbsDiv = document.getElementById('breadcrumbs');
+            breadcrumbsDiv.innerHTML = pathStack.map(item => item.name).join(' <i class="fas fa-chevron-left"></i> ');
+        }
+
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (username === 'admin' && password === 'taizengforbetter') {
+                isAdminLoggedIn = true;
+                document.getElementById('adminOptions').style.display = 'block';
+                document.getElementById('loginForm').style.display = 'none';
+                alert('مرحباً بك يا مسؤول!');
+                renderNews();
+            } else {
+                alert('خطأ في البيانات! الرجاء المحاولة مرة أخرى');
+                document.getElementById('password').value = '';
+            }
+        }
+
+        function showDelegates() {
+            const modal = document.getElementById('delegatesModal');
+            const content = document.getElementById('delegatesContent');
+            
+            let html = '<div style="text-align:center;">';
+            html += '<h2 style="color:#2c3e50;">مناديب الأقسام</h2>';
+            
+            for (const [section, levels] of Object.entries(delegates)) {
+                html += <div style="margin:20px 0;padding:15px;background:#f8f9fa;border-radius:8px;">;
+                html += <h3 style="color:#1abc9c;">${section}</h3>;
+                html += '<ul style="list-style-type:none;padding:0;">';
+                
+                for (const [level, delegate] of Object.entries(levels)) {
+                    html += <li style="padding:8px;border-bottom:1px solid #eee;">;
+                    html += <strong>${level}:</strong> ${delegate.name} - ${delegate.phone};
+                    html += </li>;
+                }
+                
+                html += </ul></div>;
+            }
+            
+            html += </div>;
+            content.innerHTML = html;
+            modal.style.display = 'block';
+        }
+
+        function renderDelegatesList() {
+            const container = document.getElementById('delegatesList');
+            container.innerHTML = '';
+            
+            const sections = Object.keys(delegates).slice(0, 2);
+            
+            sections.forEach(section => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.innerHTML = <strong>${section}</strong>;
+                
+                const list = document.createElement('ul');
+                Object.entries(delegates[section]).slice(0, 2).forEach(([level, delegate]) => {
+                    const item = document.createElement('li');
+                    item.textContent = ${level}: ${delegate.name};
+                    list.appendChild(item);
+                });
+                
+                sectionDiv.appendChild(list);
+                container.appendChild(sectionDiv);
+            });
+        }
+
+        function initializeApp() {
+            if (appInitialized) return;
+            appInitialized = true;
+            
+            renderDelegatesList();
+            renderNews();
+            
+            document.getElementById('departmentsBtn').addEventListener('click', showSections);
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                login();
+            });
+            document.getElementById('showDelegatesBtn').addEventListener('click', showDelegates);
+            document.getElementById('creatorBtn').addEventListener('click', function() {
+                document.getElementById('creatorModal').style.display = 'block';
+            });
+            
+            if (currentSchedule) {
+                document.getElementById('scheduleBtn').addEventListener('click', showScheduleManager);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            
+            setTimeout(() => {
+                if (!gapiLoaded) {
+                    console.log('Working without Google Drive');
+                    document.getElementById('gdriveStatus').innerHTML = 
+                        '<i class="fas fa-info-circle"></i> الوضع المحلي بدون Google Drive';
+                }
+            }, 3000);
+        });
+
+ async function updateConnectionStatus() {
             if (!gdriveStatus) return;
             
             try {
@@ -2127,3 +2327,4 @@ isAdminLoggedIn = true;
     </script>
 </body>
 </html>
+  
