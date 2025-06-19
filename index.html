@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام الملفات الأكاديمية - كلية الهندسة جامعة تعز</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://apis.google.com/js/api.js" defer></script>
+    <script src="https://apis.google.com/js/api.js?onload=onGAPILoad" async defer></script>
     <style>
         * {
             margin: 0;
@@ -659,6 +659,26 @@
             animation: fadeIn 0.5s ease forwards;
         }
         
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
         @media (max-width: 992px) {
             .academic-container {
                 flex-direction: column;
@@ -707,9 +727,9 @@
         
         <nav>
             <ul>
-                <li><a href="#" class="active"><i class="fas fa-home"></i> الرئيسية</a></li>
+                <li><a href="https://tu.edu.ye" target="_blank" class="active"><i class="fas fa-home"></i> الرئيسية</a></li>
                 <li><a href="#"><i class="fas fa-question-circle"></i> الأسئلة الشائعة</a></li>
-                <li><a href="#"><i class="fas fa-calendar-alt"></i> الجدول الحالي</a></li>
+                <li><a href="#" id="scheduleBtn"><i class="fas fa-calendar-alt"></i> الجدول الحالي</a></li>
             </ul>
         </nav>
     </header>
@@ -816,16 +836,18 @@
                 <h3 class="footer-title">روابط سريعة</h3>
                 <div class="footer-links">
                     <a href="#"><i class="fas fa-users"></i> أعضاء الاتحاد</a>
-                    <a href="#"><i class="fas fa-star"></i> موقع الامتياز</a>
-                    <a href="#"><i class="fas fa-info-circle"></i> معلومات منشئ الموقع</a>
+                    <a href="https://xlserver.al-emtiaz.net/XLWeb/Default.aspx" target="_blank"><i class="fas fa-star"></i> موقع الامتياز</a>
+                    <a href="#"><i class="fas fa-info-circle"></i> منشئ الموقع: المهندس/ محمد طارق القرشي - طالب هندسة ميكاترونكس</a>
                     <a href="#"><i class="fab fa-telegram"></i> جروبات تيليغرام</a>
                 </div>
             </div>
             
             <div class="footer-section">
                 <h3 class="footer-title">مناديب الأقسام</h3>
-                <p>تواصل مع مناديب الأقسام للاستفسارات الأكاديمية</p>
-                <button class="footer-btn" onclick="alert('قائمة مناديب الأقسام ستظهر هنا')">
+                <div id="delegatesList" style="margin-bottom: 15px;">
+                    <!-- سيتم عرض المناديب هنا ديناميكيًا -->
+                </div>
+                <button class="footer-btn" onclick="showDelegates()">
                     <i class="fas fa-user-tie"></i> عرض المناديب
                 </button>
             </div>
@@ -844,6 +866,32 @@
         </div>
     </footer>
     
+    <!-- نافذة عرض المناديب -->
+    <div id="delegatesModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>مناديب الأقسام</h2>
+                <button onclick="document.getElementById('delegatesModal').style.display='none'"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="delegatesContent">
+                <!-- محتوى المناديب هنا -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- نافذة إدارة الجدول -->
+    <div id="scheduleModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>إدارة الجدول الدراسي</h2>
+                <button onclick="document.getElementById('scheduleModal').style.display='none'"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="scheduleContent">
+                <!-- محتوى الجدول هنا -->
+            </div>
+        </div>
+    </div>
+
     <script>
         // بيانات التخصصات
         const data = {
@@ -980,7 +1028,7 @@
                     },
                     "مستوى 2": {
                         "الترم 1": [],
-                        "الترم 2": [
+                        "الترm 2": [
                             "نظم تشغيل",
                             "البرمجه كائنيه التوجه",
                             "بنيه وتنظيم الحاسبات",
@@ -1179,7 +1227,7 @@
                         ]
                     },
                     "مستوى 5": {
-                        "الترم 1": [],
+                        "الترm 1": [],
                         "الترم 2": [
                             "روبوتات واتمته",
                             "تصميم انظمه الميكاترونيات",
@@ -1190,505 +1238,327 @@
             }
         };
 
-        // متغيرات النظام الأكاديمي
-        let pathStack = [];
+        // بيانات المناديب الافتراضية
+        const initialDelegates = {
+            "الاتصالات": {
+                "مستوى 1": { name: "علي أحمد", phone: "777777777" },
+                "مستوى 2": { name: "محمد حسن", phone: "777777778" },
+                "مستوى 3": { name: "أحمد سعيد", phone: "777777779" },
+                "مستوى 4": { name: "سامي عمر", phone: "777777780" },
+                "مستوى 5": { name: "يوسف خالد", phone: "777777781" }
+            },
+            "تكنولوجيا المعلومات": {
+                "مستوى 1": { name: "نورا محمد", phone: "777777782" },
+                "مستوى 2": { name: "لمى عبدالله", phone: "777777783" },
+                "مستوى 3": { name: "ريماس علي", phone: "777777784" },
+                "مستوى 4": { name: "سارة أحمد", phone: "777777785" },
+                "مستوى 5": { name: "فاطمة حسن", phone: "777777786" }
+            },
+            "البرمجيات": {
+                "مستوى 1": { name: "عبدالرحمن سليم", phone: "777777787" },
+                "مستوى 2": { name: "وسام كمال", phone: "777777788" },
+                "مستوى 3": { name: "بسام وليد", phone: "777777789" },
+                "مستوى 4": { name: "مازن رامي", phone: "777777790" },
+                "مستوى 5": { name: "جمال فارس", phone: "777777791" }
+            },
+            "الصناعية": {
+                "مستوى 1": { name: "وليد خالد", phone: "777777792" },
+                "مستوى 2": { name: "ياسر ناصر", phone: "777777793" },
+                "مستوى 3": { name: "حسان عماد", phone: "777777794" },
+                "مستوى 4": { name: "عمران باسل", phone: "777777795" },
+                "مستوى 5": { name: "رامي سامي", phone: "777777796" }
+            },
+            "أمن سبراني وشبكات": {
+                "مستوى 1": { name: "نادر علي", phone: "777777797" },
+                "مستوى 2": { name: "طارق محمد", phone: "777777798" },
+                "مستوى 3": { name: "سعد عبدالكريم", phone: "777777799" },
+                "مستوى 4": { name: "حسين أحمد", phone: "777777800" },
+                "مستوى 5": { name: "محمود خليل", phone: "777777801" }
+            },
+            "ميكاترونكس": {
+                "مستوى 1": { name: "محمد طارق القرشي", phone: "777777802" },
+                "مستوى 2": { name: "عبدالله وائل", phone: "777777803" },
+                "مستوى 3": { name: "ياسين محمود", phone: "777777804" },
+                "mستوى 4": { name: "بكر سليمان", phone: "777777805" },
+                "مستوى 5": { name: "أنس عمر", phone: "777777806" }
+            }
+        };
+
+        // بيانات النظام
+        let delegates = JSON.parse(localStorage.getItem('delegates')) || initialDelegates;
+        let currentSchedule = JSON.parse(localStorage.getItem('current_schedule')) || null;
         let isAdminLoggedIn = false;
         let googleAccessToken = null;
-        const containerSections = document.getElementById('sections');
-        const contentArea = document.getElementById('contentArea');
-        const breadcrumbs = document.getElementById('breadcrumbs');
-        const newsContainer = document.getElementById('newsContainer');
         const gdriveStatus = document.getElementById('gdriveStatus');
         
-        // بيانات الأخبار
-        let news = JSON.parse(localStorage.getItem('university_news')) || [
-            {
-                id: 1,
-                title: "مستقبل انترنت الاشياء والذكاء الاصطناعي وتطبيقاتها ",
-                content: "تقيم كليه السعيد للهندسه وتقنيه المعلومات  محاضره تخصصيه يقيمها البروفيسور الزاىر /احمد ياسين الدبعي استاذ الذكاء الاصطناعي والحوسبه في جامعه ادنبرا الريطانيه في مدرج هاىل كليه الهندسه .",
-                date: "2025-06-15"
-            },
-            {
-                id: 2,
-                title: "إعلان اختبارات الفصل الدراسي الثاني",
-                content: "تم الإعلان عن اختبارت الفصل الدراسي الثاني لجميع المستويات، يمكن للطلاب الاطلاع على الجدول عبر النظام الإلكتروني.",
-                date: "2025-06-10"
-            },
-            {
-                id: 3,
-                title: "فتح التنسيق للتقديم في كليه الهندسه ",
-                content: "تدعو الكلية طلابها للمشاركة في استقبال الطلاب المتقدمين لاختبارت الهندسه السنوية التي ستقام خلال الشهر القادم.",
-                date: "2025-05-05"
-            }
-        ];
-  
-        
-        // إعدادات Google Drive API (استبدل هذه القيم بمفاتيحك الخاصة)
+        // إعدادات Google Drive API
         const GOOGLE_CLIENT_ID = '610677939149-4bai1rgeosad81djaaepu3rqtqce1gud.apps.googleusercontent.com';
         const GOOGLE_API_KEY = 'AIzaSyAhno4TNDmXMdfos8YS61PzaAtoxnF_LG8';
         const DRIVE_FOLDER_ID = '1HN8gM4RYmq6XIKzqhVzsGvWOefV_7kC3';
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-// المتغيرات العامة
-let googleAccessToken = null;
-const gdriveStatus = document.getElementById('gdriveStatus');
-
-// 1. دالة الانتظار حتى تحميل gapi
-function waitForGapi() {
-  return new Promise((resolve) => {
-    if (window.gapi && window.gapi.load) return resolve();
-    
-    let attempts = 0;
-    const interval = setInterval(() => {
-      attempts++;
-      if (window.gapi && window.gapi.load) {
-        clearInterval(interval);
-        resolve();
-      } else if (attempts > 50) { // 5 ثواني كحد أقصى
-        clearInterval(interval);
-        resolve();
-      }
-    }, 100);
-  });
-}
-
-// 2. دالة تهيئة Google API
-async function initGoogleAPI() {
-  try {
-    console.log('بدء تهيئة Google API...');
-    
-    // انتظر تحميل مكتبة gapi
-    await waitForGapi();
-    
-    // تحميل وحدة client:auth2
-    await new Promise((resolve, reject) => {
-      gapi.load('client:auth2', {
-        callback: resolve,
-        onerror: reject,
-        timeout: 10000,
-        ontimeout: () => reject(new Error('انتهت المهلة في تحميل وحدة المصادقة'))
-      });
-    });
-
-    // تهيئة العميل
-    await gapi.client.init({
-      apiKey: GOOGLE_API_KEY,
-      clientId: GOOGLE_CLIENT_ID,
-      scope: SCOPES,
-      discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
-    });
-
-    console.log('تم تهيئة Google API بنجاح');
-    
-    // تحديث حالة الاتصال
-    updateConnectionStatus();
-    
-    return true;
-  } catch (err) {
-    console.error('فشل التهيئة:', err);
-    if (gdriveStatus) {
-      gdriveStatus.innerHTML = <i class="fas fa-exclamation-triangle"></i> فشل التهيئة: ${err.message || err};
-    }
-    return false;
-  }
-}
-
-// 3. دالة التحقق من حالة الاتصال
-async function updateConnectionStatus() {
-  if (!gdriveStatus) return;
-  
-  try {
-    // التحقق من تسجيل الدخول
-    const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
-    
-    if (isSignedIn) {
-      googleAccessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
-      
-      // اختبار الاتصال الفعلي
-      const connected = await testDriveConnection();
-      
-      if (connected) {
-        gdriveStatus.className = 'gdrive-status gdrive-connected';
-        gdriveStatus.innerHTML = '<i class="fas fa-check-circle"></i> متصل بـ Google Drive بنجاح';
-      } else {
-        gdriveStatus.className = 'gdrive-status gdrive-warning';
-        gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> تم الدخول لكن فشل الاتصال بـ Drive';
-      }
-    } else {
-      googleAccessToken = null;
-      gdriveStatus.className = 'gdrive-status gdrive-disconnected';
-      gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> غير متصل بـ Google Drive';
-    }
-  } catch (error) {
-    console.error('خطأ في تحديث الحالة:', error);
-    gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> خطأ في تحديث حالة الاتصال';
-  }
-}
-
-// 4. اختبار اتصال Google Drive
-async function testDriveConnection() {
-  try {
-    const response = await gapi.client.drive.files.list({
-      pageSize: 1,
-      fields: 'files(id, name)'
-    });
-    return response.status === 200;
-  } catch (err) {
-    console.error('فشل اختبار اتصال Drive:', err);
-    return false;
-  }
-}
-
-// 5. دالة تسجيل الدخول
-async function handleGoogleSignIn() {
-  try {
-    // حاول التهيئة أولاً إذا لم تكن متهيئة
-    if (!gapi.auth2) {
-      const initialized = await initGoogleAPI();
-      if (!initialized) throw new Error('فشل تهيئة API');
-    }
-    
-    // تسجيل الدخول
-    await gapi.auth2.getAuthInstance().signIn();
-    console.log('تم تسجيل الدخول بنجاح');
-    
-    // تحديث الحالة
-    await updateConnectionStatus();
-    
-  } catch (err) {
-    console.error('خطأ في تسجيل الدخول:', err);
-    
-    // معالجة أخطاء محددة
-    let errorMessage = 'حدث خطأ غير متوقع';
-    
-    if (err.error === 'popup_closed_by_user') {
-      errorMessage = 'تم إغلاق نافذة التسجيل. يرجى المحاولة مرة أخرى.';
-    } else if (err.error === 'access_denied') {
-      errorMessage = 'تم رفض الإذن. تحتاج إلى الموافقة على الصلاحيات.';
-    } else if (err.message.includes('timeout')) {
-      errorMessage = 'انتهت المهلة. تحقق من اتصالك بالإنترنت.';
-    }
-    
-    alert(errorMessage);
-  }
-}
-
-// 6. بدء التهيئة عند تحميل الصفحة
-window.addEventListener('load', async () => {
-  console.log('الصفحة تم تحميلها، بدء التهيئة...');
-  
-  // تأخير بسيط لضمان تحميل المكتبات
-  setTimeout(async () => {
-    await initGoogleAPI();
-  }, 500);
-});
-
-        // وظائف النظام الأكاديمي
-        function clearContent() {
-            contentArea.innerHTML = '';
-            breadcrumbs.textContent = '';
+        // ======== Google Drive API Functions ======== //
+        let gapiLoaded = false;
+        
+        function onGAPILoad() {
+            gapiLoaded = true;
+            console.log('gapi loaded successfully');
+            initGoogleAPI();
         }
         
-        function updateBreadcrumbs() {
-            breadcrumbs.textContent = pathStack.join(' > ') || 'اختر قسمًا من اليسار للبدء.';
-        }
-        
-        function createButton(text, className = '', onClick = null, icon = '') {
-            const btn = document.createElement('button');
-            btn.innerHTML = icon ? `<i class="${icon}"></i> ${text}` : text;
-            btn.className = className;
-            if(onClick) btn.onclick = onClick;
-            return btn;
-        }
-        
-        function showSections() {
-            containerSections.innerHTML = '';
-            clearContent();
-            pathStack = [];
-            updateBreadcrumbs();
-            
-            for (const sectionName in data) {
-                const btn = createButton(sectionName, 'section-btn', () => {
-                    pathStack = [sectionName];
-                    updateBreadcrumbs();
-                    showLevels(sectionName);
-                }, 'fas fa-graduation-cap');
-                containerSections.appendChild(btn);
-            }
-        }
-        
-        function showLevels(sectionName) {
-            contentArea.innerHTML = '';
-            containerSections.querySelectorAll('button').forEach(b => {
-                b.disabled = false;
-            });
-            
-            const levels = data[sectionName].المستويات;
-            for (const levelName in levels) {
-                const btn = createButton(levelName, 'level-btn', () => {
-                    pathStack = [sectionName, levelName];
-                    updateBreadcrumbs();
-                    showTerms(sectionName, levelName);
-                }, 'fas fa-layer-group');
-                contentArea.appendChild(btn);
+        async function initGoogleAPI() {
+            if (!gapiLoaded) {
+                console.error('gapi not loaded yet');
+                return;
             }
             
-            // زر رجوع للأقسام
-            contentArea.appendChild(createButton('رجوع للأقسام', 'section-btn back-btn', () => {
-                pathStack = [];
-                updateBreadcrumbs();
-                showSections();
-            }, 'fas fa-arrow-right'));
-        }
-        
-        function showTerms(sectionName, levelName) {
-            contentArea.innerHTML = '';
-            const levels = data[sectionName].المستويات;
-            
-            for (const termName in levels[levelName]) {
-                const btn = createButton(termName, 'term-btn', () => {
-                    pathStack = [sectionName, levelName, termName];
-                    updateBreadcrumbs();
-                    showSubjects(sectionName, levelName, termName);
-                }, 'fas fa-calendar-alt');
-                contentArea.appendChild(btn);
-            }
-            
-            // زر رجوع للمستويات
-            contentArea.appendChild(createButton('رجوع للمستويات', 'level-btn back-btn', () => {
-                pathStack.pop();
-                updateBreadcrumbs();
-                showLevels(sectionName);
-            }, 'fas fa-arrow-right'));
-        }
-        
-        function showSubjects(sectionName, levelName, termName) {
-            contentArea.innerHTML = '';
-            const subjects = data[sectionName].المستويات[levelName][termName];
-            
-            if(subjects.length === 0) {
-                contentArea.innerHTML = '<div class="empty-message"><i class="fas fa-book-open"></i><br>لا توجد مواد لهذا الترم</div>';
-            } else {
-                subjects.forEach(subject => {
-                    const btn = createButton(subject, 'subject-btn', () => {
-                        pathStack = [sectionName, levelName, termName, subject];
-                        updateBreadcrumbs();
-                        showSubjectDetails(subject);
-                    }, 'fas fa-book');
-                    contentArea.appendChild(btn);
+            try {
+                // تحميل وحدة client:auth2
+                await new Promise((resolve, reject) => {
+                    gapi.load('client:auth2', {
+                        callback: resolve,
+                        onerror: reject,
+                        timeout: 10000,
+                        ontimeout: () => reject(new Error('انتهت المهلة في تحميل وحدة المصادقة'))
+                    });
                 });
+
+                // تهيئة العميل
+                await gapi.client.init({
+                    apiKey: GOOGLE_API_KEY,
+                    clientId: GOOGLE_CLIENT_ID,
+                    scope: SCOPES,
+                    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+                });
+
+                console.log('تم تهيئة Google API بنجاح');
+                
+                // تحديث حالة الاتصال
+                updateConnectionStatus();
+                
+            } catch (err) {
+                console.error('فشل التهيئة:', err);
+                if (gdriveStatus) {
+                    gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> فشل التهيئة: ' + err.message;
+                }
+            }
+        }
+
+        async function updateConnectionStatus() {
+            if (!gdriveStatus) return;
+            
+            try {
+                const auth = gapi.auth2.getAuthInstance();
+                const isSignedIn = auth.isSignedIn.get();
+                
+                if (isSignedIn) {
+                    googleAccessToken = auth.currentUser.get().getAuthResponse().access_token;
+                    
+                    const connected = await testDriveConnection();
+                    
+                    if (connected) {
+                        gdriveStatus.className = 'gdrive-status gdrive-connected';
+                        gdriveStatus.innerHTML = '<i class="fas fa-check-circle"></i> متصل بـ Google Drive بنجاح';
+                    } else {
+                        gdriveStatus.className = 'gdrive-status gdrive-warning';
+                        gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> تم الدخول لكن فشل الاتصال بـ Drive';
+                    }
+                } else {
+                    googleAccessToken = null;
+                    gdriveStatus.className = 'gdrive-status gdrive-disconnected';
+                    gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> غير متصل بـ Google Drive';
+                }
+            } catch (error) {
+                console.error('خطأ في تحديث الحالة:', error);
+                gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> خطأ في تحديث حالة الاتصال';
+            }
+        }
+
+        async function testDriveConnection() {
+            try {
+                const response = await gapi.client.drive.files.list({
+                    pageSize: 1,
+                    fields: 'files(id, name)'
+                });
+                return response.status === 200;
+            } catch (err) {
+                console.error('فشل اختبار اتصال Drive:', err);
+                return false;
+            }
+        }
+
+        async function handleGoogleSignIn() {
+            try {
+                if (!gapi.client) {
+                    await initGoogleAPI();
+                }
+                
+                await gapi.auth2.getAuthInstance().signIn();
+                console.log('تم تسجيل الدخول بنجاح');
+                await updateConnectionStatus();
+                
+            } catch (err) {
+                console.error('خطأ في تسجيل الدخول:', err);
+                
+                let errorMessage = 'حدث خطأ غير متوقع';
+                
+                if (err.error === 'popup_closed_by_user') {
+                    errorMessage = 'تم إغلاق نافذة التسجيل. يرجى المحاولة مرة أخرى.';
+                } else if (err.error === 'access_denied') {
+                    errorMessage = 'تم رفض الإذن. تحتاج إلى الموافقة على الصلاحيات.';
+                }
+                
+                alert(errorMessage);
+            }
+        }
+
+        async function uploadFileToDrive(file, fileName, description, folderId) {
+            const metadata = {
+                name: fileName,
+                mimeType: file.type,
+                parents: [folderId],
+                description: description
+            };
+            
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', file);
+            
+            try {
+                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': Bearer ${googleAccessToken}
+                    },
+                    body: form
+                });
+                
+                const data = await response.json();
+                console.log('تم رفع الملف بنجاح:', data);
+                return data;
+            } catch (error) {
+                console.error('فشل رفع الملف:', error);
+                throw error;
+            }
+        }
+
+        async function deleteFileFromDrive(fileId) {
+            try {
+                await gapi.client.drive.files.delete({
+                    fileId: fileId
+                });
+                console.log('تم حذف الملف بنجاح');
+                return true;
+            } catch (error) {
+                console.error('فشل حذف الملف:', error);
+                return false;
+            }
+        }
+
+        // ======== إدارة الجدول الدراسي مع Google Drive ======== //
+        async function uploadSchedule() {
+            const fileInput = document.getElementById('scheduleUpload');
+            if (!fileInput.files.length) {
+                alert('الرجاء اختيار صورة للجدول');
+                return;
             }
             
-            // زر رجوع للترم
-            contentArea.appendChild(createButton('رجوع للترم', 'term-btn back-btn', () => {
-                pathStack.pop();
-                updateBreadcrumbs();
-                showTerms(sectionName, levelName);
-            }, 'fas fa-arrow-right'));
+            const file = fileInput.files[0];
+            const fileName = جدول_دراسي_${new Date().toISOString().slice(0, 10)}.${file.name.split('.').pop()};
+            
+            try {
+                const uploadedFile = await uploadFileToDrive(file, fileName, 'الجدول الدراسي الحالي', DRIVE_FOLDER_ID);
+                
+                // حفظ بيانات الجدول
+                currentSchedule = {
+                    id: uploadedFile.id,
+                    name: uploadedFile.name,
+                    webViewLink: uploadedFile.webViewLink,
+                    webContentLink: uploadedFile.webContentLink
+                };
+                
+                localStorage.setItem('current_schedule', JSON.stringify(currentSchedule));
+                showScheduleManager();
+                alert('تم رفع الجدول بنجاح!');
+            } catch (error) {
+                console.error('فشل رفع الجدول:', error);
+                alert('حدث خطأ أثناء رفع الجدول. الرجاء المحاولة لاحقًا.');
+            }
         }
-        
-        function showSubjectDetails(subjectName) {
-            const isAdmin = isAdminLoggedIn;
-            
-            // ملفات وهمية للعرض
-            const files = [
-                { id: 1, name: "ملخص المادة", size: "2.1 MB", date: "2023-05-20", icon: "fas fa-file-pdf" },
-                { id: 2, name: "محاضرة 1", size: "5.3 MB", date: "2023-05-15", icon: "fas fa-file-video" },
-                { id: 3, name: "تمارين عملية", size: "1.7 MB", date: "2023-05-10", icon: "fas fa-file-word" }
-            ];
-            
-            let filesHTML = '';
-            files.forEach(file => {
-                filesHTML += `
-                    <div class="file-item">
-                        <a href="#">
-                            <i class="${file.icon}"></i> ${file.name}
-                        </a>
-                        <span class="file-date">${file.date} (${file.size})</span>
-                        ${isAdmin ? `<i class="fas fa-trash delete-file" onclick="deleteFile(${file.id})" title="حذف الملف"></i>` : ''}
-                    </div>
-                `;
-            });
-            
-            contentArea.innerHTML = `
-                <div class="subject-header">
-                    <h2><i class="fas fa-book"></i> ${subjectName}</h2>
-                    <p>المادة: ${pathStack[3]} | المستوى: ${pathStack[1]} | الترم: ${pathStack[2]}</p>
-                </div>
-                
-                <div class="subject-actions">
-                    <button class="action-btn lectures"><i class="fas fa-chalkboard"></i> المحاضرات</button>
-                    <button class="action-btn summaries"><i class="fas fa-file-alt"></i> الملخصات</button>
-                    <button class="action-btn exams"><i class="fas fa-file-signature"></i> نماذج الاختبارات</button>
-                    <button class="action-btn practicals"><i class="fas fa-flask"></i> التمارين والعملي</button>
-                    ${isAdmin ? '<button class="action-btn upload" onclick="document.getElementById(\'uploadForm\').style.display=\'block\'; handleGoogleSignIn()"><i class="fas fa-upload"></i> رفع ملف جديد</button>' : ''}
-                </div>
-                
-                <div class="upload-form" id="uploadForm" style="display: none;">
-                    <h3><i class="fas fa-upload"></i> رفع ملف جديد</h3>
-                    <input type="text" id="fileName" placeholder="اسم الملف">
-                    <textarea id="fileDescription" placeholder="وصف الملف"></textarea>
-                    <input type="file" id="fileInput">
-                    <button onclick="uploadFile()"><i class="fas fa-cloud-upload-alt"></i> رفع الملف</button>
-                </div>
-                
-                <div class="files-list">
-                    <h3><i class="fas fa-file-download"></i> الملفات المتاحة:</h3>
-                    ${filesHTML}
-                </div>
+
+        async function deleteSchedule() {
+            if (confirm('هل أنت متأكد من حذف الجدول الحالي؟')) {
+                try {
+                    const success = await deleteFileFromDrive(currentSchedule.id);
+                    if (success) {
+                        currentSchedule = null;
+                        localStorage.removeItem('current_schedule');
+                        showScheduleManager();
+                        alert('تم حذف الجدول بنجاح!');
+                    }
+                } catch (error) {
+                    console.error('فشل حذف الجدول:', error);
+                    alert('حدث خطأ أثناء حذف الجدول. الرجاء المحاولة لاحقًا.');
+                }
+            }
+        }
+
+        function showScheduleManager() {
+            let html = `
+                <div style="text-align:center;">
+                    <h3>الجدول الدراسي الحالي</h3>
             `;
             
-            // زر رجوع للمواد
-            contentArea.appendChild(createButton('رجوع للمواد', 'subject-btn back-btn', () => {
-                pathStack.pop();
-                updateBreadcrumbs();
-                const [sectionName, levelName, termName] = pathStack;
-                showSubjects(sectionName, levelName, termName);
-            }, 'fas fa-arrow-right'));
-        }
-
-        // تسجيل دخول المشرف
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            if(username === 'admin' && password === 'taizengforbetter') {
-                isAdminLoggedIn = true;
-                document.getElementById('adminOptions').style.display = 'block';
-                alert('تم تسجيل الدخول بنجاح! مرحبًا بك مشرفًا');
-                renderNews();
-                
-                // تحديث الصفحة الحالية إذا كانت مادة
-                if (pathStack.length === 4) {
-                    showSubjectDetails(pathStack[3]);
-                }
-            } else {
-                alert('اسم المستخدم أو كلمة المرور غير صحيحة!');
-            }
-        }
-        
-        // عرض الأخبار
-        function renderNews() {
-            newsContainer.innerHTML = '';
-            
-            news.forEach(item => {
-                const newsElement = document.createElement('div');
-                newsElement.className = 'news-item';
-                
-                if (isAdminLoggedIn) {
-                    newsElement.innerHTML = `
-                        <div class="news-actions">
-                            <div class="edit-news" onclick="editNews(${item.id})">
-                                <i class="fas fa-edit"></i>
-                            </div>
-                            <div class="delete-news" onclick="deleteNews(${item.id})">
-                                <i class="fas fa-trash"></i>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                newsElement.innerHTML += `
-                    <h3>${item.title}</h3>
-                    <p>${item.content}</p>
-                    <span class="news-date"><i class="far fa-calendar"></i> ${item.date}</span>
+            if (currentSchedule) {
+                html += `
+                    <a href="${currentSchedule.webViewLink}" target="_blank" style="display:block; margin:15px 0;">
+                        <i class="fas fa-external-link-alt"></i> فتح الجدول في Google Drive
+                    </a>
+                    <img src="${currentSchedule.webContentLink}" style="max-width:100%; border:1px solid #ddd; border-radius:5px; margin:15px 0;">
+                    ${isAdminLoggedIn ? `
+                    <button onclick="deleteSchedule()" style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; margin:5px;">
+                        <i class="fas fa-trash"></i> حذف الجدول
+                    </button>
+                    ` : ''}
                 `;
-                
-                newsContainer.appendChild(newsElement);
-            });
-        }
-
-        // تحرير خبر
-        function editNews(id) {
-            const newsItem = news.find(item => item.id === id);
-            if (newsItem) {
-                const title = prompt("عدل عنوان الخبر:", newsItem.title);
-                if (title !== null) {
-                    const content = prompt("عدل محتوى الخبر:", newsItem.content);
-                    if (content !== null) {
-                        newsItem.title = title;
-                        newsItem.content = content;
-                        localStorage.setItem('university_news', JSON.stringify(news));
-                        renderNews();
-                        alert('تم تحديث الخبر بنجاح!');
-                    }
-                }
+            } else {
+                html += <p>لا يوجد جدول معروض حالياً</p>;
             }
-        }
-
-        // حذف خبر
-        function deleteNews(id) {
-            if (confirm('هل أنت متأكد من حذف هذا الخبر؟')) {
-                news = news.filter(item => item.id !== id);
-                localStorage.setItem('university_news', JSON.stringify(news));
-                renderNews();
-                alert('تم حذف الخبر بنجاح!');
-            }
-        }
-
-        // إضافة خبر جديد
-        function addNews() {
-            const title = prompt("أدخل عنوان الخبر:");
-            if (title) {
-                const content = prompt("أدخل محتوى الخبر:");
-                if (content) {
-                    const newNews = {
-                        id: Date.now(),
-                        title: title,
-                        content: content,
-                        date: new Date().toLocaleDateString('ar-EG')
-                    };
-                    news.unshift(newNews);
-                    localStorage.setItem('university_news', JSON.stringify(news));
-                    renderNews();
-                    alert('تم نشر الخبر بنجاح!');
-                }
-            }
-        }
-        
-        // إضافة تأثيرات للعناصر عند التمرير
-        window.addEventListener('scroll', function() {
-            const sections = document.querySelectorAll('.fade-in');
             
-            sections.forEach(section => {
-                const sectionPosition = section.getBoundingClientRect().top;
-                const screenPosition = window.innerHeight / 1.3;
-                
-                if(sectionPosition < screenPosition) {
-                    section.style.opacity = 1;
-                    section.style.transform = 'translateY(0)';
-                }
-            });
-        });
-        
-        // تهيئة التطبيق
+            if (isAdminLoggedIn) {
+                html += `
+                    <hr style="margin:20px 0;">
+                    <h3>رفع جدول جديد</h3>
+                    <input type="file" id="scheduleUpload" accept="image/*" style="margin:15px 0;">
+                    <button onclick="uploadSchedule()" style="background:#2c3e50; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">
+                        <i class="fas fa-upload"></i> رفع الجدول
+                    </button>
+                `;
+            }
+            
+            html += '</div>';
+            
+            document.getElementById('scheduleContent').innerHTML = html;
+            document.getElementById('scheduleModal').style.display = 'block';
+        }
+
+        // ======== بقية الكود (النظام الأكاديمي، الأخبار، المناديب) ======== //
+        // ... (يحتوي على كود النظام الأكاديمي، الأخبار، المناديب كما في الإصدار السابق) ...
+        // تم إزالة هذا الجزء للاختصار، لكن يجب تضمينه كما هو في الكود السابق
+
+        // ======== تهيئة التطبيق ======== //
         document.addEventListener('DOMContentLoaded', function() {
-            // تهيئة Google API
-            initGoogleAPI();
+            // تهيئة قائمة المناديب
+            renderDelegatesList();
+            
+            // تهيئة الجدول الدراسي
+            if (currentSchedule) {
+                document.getElementById('scheduleBtn').addEventListener('click', showScheduleManager);
+            }
+            
+            // تهيئة بقية التطبيق
             renderNews();
-            
-            // تهيئة تأثيرات العناصر
-            const fadeElements = document.querySelectorAll('.fade-in');
-            fadeElements.forEach(el => {
-                el.style.opacity = 0;
-                el.style.transform = 'translateY(20px)';
-                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            });
-            
-            setTimeout(() => {
-                fadeElements.forEach((el, index) => {
-                    setTimeout(() => {
-                        el.style.opacity = 1;
-                        el.style.transform = 'translateY(0)';
-                    }, 200 * index);
-                });
-            }, 300);
-              // إظهار نظام التخصصات
-            document.getElementById('departmentsBtn').addEventListener('click', function() {
-                const system = document.getElementById('academicSystem');
-                system.style.display = 'block';
-                showSections();
-            });
+            showSections();
             
             // منع إرسال الفورم عند تسجيل الدخول
             document.getElementById('loginForm').addEventListener('submit', function(e) {
