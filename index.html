@@ -918,6 +918,8 @@ border-bottom: 2px solid #1abc9c;
     </div>
 
     <script>
+        // متغير لمعرفة إذا كان التطبيق جاهزاً
+let appInitialized = false;
         // بيانات التخصصات
         const data = {
             "الاتصالات": {
@@ -1319,7 +1321,7 @@ border-bottom: 2px solid #1abc9c;
         let isAdminLoggedIn = false;
         let googleAccessToken = null;
         const gdriveStatus = document.getElementById('gdriveStatus');
-        
+        let appInitialized = false;
         // إعدادات Google Drive API
         const GOOGLE_CLIENT_ID = '610677939149-4bai1rgeosad81djaaepu3rqtqce1gud.apps.googleusercontent.com';
         const GOOGLE_API_KEY = 'AIzaSyAhno4TNDmXMdfos8YS61PzaAtoxnF_LG8';
@@ -1334,52 +1336,81 @@ border-bottom: 2px solid #1abc9c;
         let currentSubject = null;
 
         // ======== Google Drive API Functions ======== //
-        let gapiLoaded = false;
+       let gapiLoaded = false;
+
+function onGAPILoad() {
+    console.log('Google API loaded');
+    initGoogleAPI().catch(error => {
+        console.error('Failed to initialize Google API:', error);
+        initializeApp(); // <-- نستمر في تشغيل التطبيق حتى لو فشل Google API
+    });
+}
+
+async function initGoogleAPI() {
+    try {
+        await new Promise((resolve) => {
+            gapi.load('client:auth2', resolve);
+        });
         
-        function onGAPILoad() {
-            gapiLoaded = true;
-            console.log('gapi loaded successfully');
-            initGoogleAPI();
-        }
+        await gapi.client.init({
+            apiKey: GOOGLE_API_KEY,
+            clientId: GOOGLE_CLIENT_ID,
+            scope: SCOPES,
+            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+        });
         
-        async function initGoogleAPI() {
-            if (!gapiLoaded) {
-                console.error('gapi not loaded yet');
-                return;
-            }
-            
-            try {
-                // تحميل وحدة client:auth2
-                await new Promise((resolve, reject) => {
-                    gapi.load('client:auth2', {
-                        callback: resolve,
-                        onerror: reject,
-                        timeout: 10000,
-                        ontimeout: () => reject(new Error('انتهت المهلة في تحميل وحدة المصادقة'))
-                    });
-                });
+        console.log('Google API initialized');
+        gapiLoaded = true;
+        updateConnectionStatus();
+    } catch (error) {
+        console.error('Error initializing Google API:', error);
+        gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> مشكلة في اتصال Google Drive';
+    } finally {
+        initializeApp(); // <-- تهيئة التطبيق في جميع الأحوال
+    }
+}
 
-                // تهيئة العميل
-                await gapi.client.init({
-                    apiKey: GOOGLE_API_KEY,
-                    clientId: GOOGLE_CLIENT_ID,
-                    scope: SCOPES,
-                    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
-                });
+function initializeApp() {
+    if (appInitialized) return;
+    appInitialized = true;
+    
+    // تهيئة جميع وظائف التطبيق الأساسية
+    renderDelegatesList();
+    renderNews();
+    showSections();
+    
+    // إعداد مستمعات الأحداث
+    document.getElementById('departmentsBtn').addEventListener('click', function() {
+        document.getElementById('academicSystem').style.display = 'block';
+    });
+    
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        login();
+    });
+    
+    document.getElementById('showDelegatesBtn').addEventListener('click', showDelegates);
+    
+    document.getElementById('creatorBtn').addEventListener('click', function() {
+        document.getElementById('creatorModal').style.display = 'block';
+    });
+    
+    if (currentSchedule) {
+        document.getElementById('scheduleBtn').addEventListener('click', showScheduleManager);
+    }
+}
 
-                console.log('تم تهيئة Google API بنجاح');
-                
-                // تحديث حالة الاتصال
-                updateConnectionStatus();
-                
-            } catch (err) {
-                console.error('فشل التهيئة:', err);
-                if (gdriveStatus) {
-                    gdriveStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> فشل التهيئة: ' + err.message;
-                }
-            }
+// بدء التطبيق عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // إذا لم يتم تحميل gapi بعد 3 ثوان، نبدأ التطبيق على أي حال
+    setTimeout(() => {
+        if (!appInitialized) {
+            console.log('Initializing app without Google API');
+            initializeApp();
         }
-
+    }, 3000);
+});
+    
         async function updateConnectionStatus() {
             if (!gdriveStatus) return;
             
