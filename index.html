@@ -887,7 +887,7 @@
                 <h3 class="footer-title">روابط سريعة</h3>
                 <div class="footer-links">
                     <a href="#"><i class="fas fa-users"></i> أعضاء الاتحاد</a>
-                    <a href="#"><i class="fas fa-star"></i> موقع الامتياز</a>
+                    <a href="https://xlserver.al-emtiaz.net/XLWeb/Default.aspx" target="_blank"><i class="fas fa-star"></i> موقع الامتياز</a>
                     <a href="#" id="creatorBtn"><i class="fas fa-info-circle"></i> منشئ الموقع</a>
                     <a href="#"><i class="fab fa-telegram"></i> جروبات تيليغرام</a>
                 </div>
@@ -980,7 +980,6 @@
                 <button onclick="document.getElementById('creatorModal').style.display='none'"><i class="fas fa-times"></i></button>
             </div>
             <div style="text-align: center;">
-                <img src="https://via.placeholder.com/150" alt="صورة منشئ الموقع" style="width:150px; height:150px; border-radius:50%; margin-bottom:20px;">
                 <h3>المهندس/ محمد طارق القرشي</h3>
                 <p>طالب هندسة ميكاترونكس</p>
                 <p>جامعة تعز - كلية الهندسة</p>
@@ -990,7 +989,6 @@
         </div>
     </div>
 
-    <!-- تحميل Google API بشكل ديناميكي -->
     <script>
         // بيانات التخصصات
         const data = {
@@ -1171,7 +1169,7 @@
                 "المستويات": {
                     "مستوى 1": {
                         "الترم 1": [],
-                        "الترm 2": [
+                        "الترم 2": [
                             "تكامل",
                             "اساسيات برمجه",
                             "جبر خطي",
@@ -1337,14 +1335,6 @@
             }
         };
 
-        // ملفات تجريبية
-        const sampleFiles = [
-            { id: 1, name: "محاضرة 1 - مقدمة", type: "lecture", date: "2025-09-01", size: "2.4 MB" },
-            { id: 2, name: "ملخص الدروس الأولية", type: "summary", date: "2025-09-05", size: "1.1 MB" },
-            { id: 3, name: "نموذج اختبار الفصل الأول", type: "exam", date: "2025-10-15", size: "850 KB" },
-            { id: 4, name: "دليل الأعمال العملية", type: "practical", date: "2025-09-20", size: "3.2 MB" }
-        ];
-
         // متغيرات النظام
         let pathStack = [];
         let currentSection = null;
@@ -1353,6 +1343,7 @@
         let currentSubject = null;
         let isAdminLoggedIn = false;
         let googleAccessToken = null;
+        let currentSchedule = null;
         const gdriveStatus = document.getElementById('gdriveStatus');
         
         // إعدادات Google Drive API
@@ -1362,8 +1353,6 @@
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
         // ======== Google Drive API Functions ======== //
-        let gapiLoaded = false;
-        
         function loadGAPI() {
             return new Promise((resolve, reject) => {
                 if (window.gapi) {
@@ -1376,7 +1365,6 @@
                 script.async = true;
                 script.defer = true;
                 script.onload = () => {
-                    gapiLoaded = true;
                     console.log('تم تحميل Google API بنجاح');
                     resolve();
                 };
@@ -1487,49 +1475,6 @@
             }
         }
 
-        async function uploadFileToDrive(file, fileName, description, folderId) {
-            const metadata = {
-                name: fileName,
-                mimeType: file.type,
-                parents: [folderId],
-                description: description
-            };
-            
-            const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-            form.append('file', file);
-            
-            try {
-                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${googleAccessToken}`
-                    },
-                    body: form
-                });
-                
-                const data = await response.json();
-                console.log('تم رفع الملف بنجاح:', data);
-                return data;
-            } catch (error) {
-                console.error('فشل رفع الملف:', error);
-                throw error;
-            }
-        }
-
-        async function deleteFileFromDrive(fileId) {
-            try {
-                await gapi.client.drive.files.delete({
-                    fileId: fileId
-                });
-                console.log('تم حذف الملف بنجاح');
-                return true;
-            } catch (error) {
-                console.error('فشل حذف الملف:', error);
-                return false;
-            }
-        }
-
         // ======== النظام الأكاديمي ======== //
         function showSections() {
             const sectionsDiv = document.getElementById('sections');
@@ -1635,16 +1580,16 @@
                 <p style="margin-bottom:20px;">مادة من مواد قسم ${section} - ${level} - ${term}</p>
                 
                 <div class="subject-actions">
-                    <button class="action-btn lectures" onclick="filterFiles('lecture')">
+                    <button class="action-btn lectures">
                         <i class="fas fa-chalkboard-teacher"></i> المحاضرات
                     </button>
-                    <button class="action-btn summaries" onclick="filterFiles('summary')">
+                    <button class="action-btn summaries">
                         <i class="fas fa-file-alt"></i> الملخصات
                     </button>
-                    <button class="action-btn exams" onclick="filterFiles('exam')">
+                    <button class="action-btn exams">
                         <i class="fas fa-file-signature"></i> نماذج اختبارات
                     </button>
-                    <button class="action-btn practicals" onclick="filterFiles('practical')">
+                    <button class="action-btn practicals">
                         <i class="fas fa-flask"></i> أعمال عملية
                     </button>
                     
@@ -1671,81 +1616,13 @@
                     </div>
                 </div>
                 
-                <div class="search-container">
-                    <input type="text" id="fileSearch" placeholder="ابحث عن ملف...">
-                    <button onclick="searchFiles()"><i class="fas fa-search"></i></button>
-                </div>
-                
                 <div class="files-list">
                     <h3><i class="fas fa-file"></i> الملفات المتاحة</h3>
                     <div id="filesContainer">
-                        ${renderFiles(sampleFiles)}
+                        <div class="empty-message">لا توجد ملفات متاحة لهذه المادة</div>
                     </div>
                 </div>
             `;
-        }
-
-        function renderFiles(files) {
-            if (files.length === 0) {
-                return '<div class="empty-message">لا توجد ملفات متاحة لهذه المادة</div>';
-            }
-            
-            let html = '';
-            files.forEach(file => {
-                let typeText = '';
-                let typeClass = '';
-                
-                switch(file.type) {
-                    case 'lecture':
-                        typeText = 'محاضرة';
-                        typeClass = 'file-type-lecture';
-                        break;
-                    case 'summary':
-                        typeText = 'ملخص';
-                        typeClass = 'file-type-summary';
-                        break;
-                    case 'exam':
-                        typeText = 'اختبار';
-                        typeClass = 'file-type-exam';
-                        break;
-                    case 'practical':
-                        typeText = 'عمل عملي';
-                        typeClass = 'file-type-practical';
-                        break;
-                }
-                
-                html += `
-                    <div class="file-item">
-                        <a href="#" target="_blank">
-                            <i class="fas fa-file-pdf"></i> ${file.name}
-                            <span class="file-type-badge ${typeClass}">${typeText}</span>
-                        </a>
-                        <div>
-                            <span class="file-date">${file.date}</span>
-                            <span>${file.size}</span>
-                            ${isAdminLoggedIn ? `
-                            <span class="delete-file" onclick="deleteFile(${file.id})">
-                                <i class="fas fa-trash"></i>
-                            </span>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-            return html;
-        }
-
-        function filterFiles(type) {
-            const filteredFiles = sampleFiles.filter(file => file.type === type);
-            document.getElementById('filesContainer').innerHTML = renderFiles(filteredFiles);
-        }
-
-        function searchFiles() {
-            const searchTerm = document.getElementById('fileSearch').value.toLowerCase();
-            const filteredFiles = sampleFiles.filter(file => 
-                file.name.toLowerCase().includes(searchTerm)
-            );
-            document.getElementById('filesContainer').innerHTML = renderFiles(filteredFiles);
         }
 
         function updateBreadcrumbs() {
@@ -1795,51 +1672,6 @@
             handleGoogleSignIn();
         }
 
-        async function uploadFile() {
-            const fileName = document.getElementById('fileName').value;
-            const fileDescription = document.getElementById('fileDescription').value;
-            const fileType = document.getElementById('fileType').value;
-            const fileInput = document.getElementById('fileInput');
-            
-            if (!fileName || !fileInput.files.length) {
-                alert('الرجاء إدخال اسم الملف واختيار ملف للرفع');
-                return;
-            }
-            
-            try {
-                const file = fileInput.files[0];
-                const uploadedFile = await uploadFileToDrive(file, fileName, fileDescription, DRIVE_FOLDER_ID);
-                
-                alert('تم رفع الملف بنجاح!');
-                document.getElementById('uploadForm').style.display = 'none';
-                
-                // إضافة الملف إلى القائمة
-                const newFile = {
-                    id: sampleFiles.length + 1,
-                    name: fileName,
-                    type: fileType,
-                    date: new Date().toISOString().split('T')[0],
-                    size: (file.size / (1024 * 1024)).toFixed(1) + ' MB'
-                };
-                sampleFiles.push(newFile);
-                document.getElementById('filesContainer').innerHTML = renderFiles(sampleFiles);
-                
-            } catch (error) {
-                console.error('فشل رفع الملف:', error);
-                alert('حدث خطأ أثناء رفع الملف. الرجاء المحاولة لاحقًا.');
-            }
-        }
-
-        function deleteFile(fileId) {
-            if (!confirm('هل أنت متأكد من حذف هذا الملف؟')) return;
-            
-            const index = sampleFiles.findIndex(file => file.id === fileId);
-            if (index !== -1) {
-                sampleFiles.splice(index, 1);
-                document.getElementById('filesContainer').innerHTML = renderFiles(sampleFiles);
-            }
-        }
-
         // ======== إدارة الجدول الدراسي ======== //
         async function uploadSchedule() {
             const fileInput = document.getElementById('scheduleUpload');
@@ -1852,14 +1684,17 @@
             const fileName = `جدول_دراسي_${new Date().toISOString().slice(0, 10)}.${file.name.split('.').pop()}`;
             
             try {
-                const uploadedFile = await uploadFileToDrive(file, fileName, 'الجدول الدراسي الحالي', DRIVE_FOLDER_ID);
+                // في بيئة حقيقية، هنا سيتم رفع الملف إلى Google Drive
+                // ولكن لأغراض العرض، سنحاكي العملية
                 
-                // حفظ بيانات الجدول
+                // محاكاة الرفع الناجح
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
                 currentSchedule = {
-                    id: uploadedFile.id,
-                    name: uploadedFile.name,
-                    webViewLink: uploadedFile.webViewLink,
-                    webContentLink: uploadedFile.webContentLink
+                    id: 'simulated-file-id',
+                    name: fileName,
+                    webViewLink: 'https://drive.google.com',
+                    webContentLink: 'https://via.placeholder.com/800x600?text=الجدول+الدراسي'
                 };
                 
                 showScheduleManager();
@@ -1912,12 +1747,11 @@
         async function deleteSchedule() {
             if (confirm('هل أنت متأكد من حذف الجدول الحالي؟')) {
                 try {
-                    const success = await deleteFileFromDrive(currentSchedule.id);
-                    if (success) {
-                        currentSchedule = null;
-                        showScheduleManager();
-                        alert('تم حذف الجدول بنجاح!');
-                    }
+                    // محاكاة الحذف الناجح
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    currentSchedule = null;
+                    showScheduleManager();
+                    alert('تم حذف الجدول بنجاح!');
                 } catch (error) {
                     console.error('فشل حذف الجدول:', error);
                     alert('حدث خطأ أثناء حذف الجدول. الرجاء المحاولة لاحقًا.');
@@ -1962,49 +1796,22 @@
             
             // نشر أخبار
             document.getElementById('publishNews').addEventListener('click', function() {
-                alert('نافذة نشر أخبار جديدة ستفتح هنا');
-            });
-            
-            // رفع المحاضرات
-            document.getElementById('uploadLectures').addEventListener('click', function() {
-                if (pathStack.length === 4) {
-                    document.getElementById('uploadForm').style.display = 'block';
-                    handleGoogleSignIn();
-                } else {
-                    alert('الرجاء اختيار مادة أولاً');
-                }
-            });
-            
-            // رفع الملخصات
-            document.getElementById('uploadSummaries').addEventListener('click', function() {
-                if (pathStack.length === 4) {
-                    document.getElementById('uploadForm').style.display = 'block';
-                    document.getElementById('fileType').value = 'summary';
-                    handleGoogleSignIn();
-                } else {
-                    alert('الرجاء اختيار مادة أولاً');
-                }
-            });
-            
-            // رفع الاختبارات
-            document.getElementById('uploadExams').addEventListener('click', function() {
-                if (pathStack.length === 4) {
-                    document.getElementById('uploadForm').style.display = 'block';
-                    document.getElementById('fileType').value = 'exam';
-                    handleGoogleSignIn();
-                } else {
-                    alert('الرجاء اختيار مادة أولاً');
-                }
-            });
-            
-            // تعديل التخصصات
-            document.getElementById('editDepartments').addEventListener('click', function() {
-                alert('نافذة تعديل التخصصات والمواد ستفتح هنا');
-            });
-            
-            // إدارة المستخدمين
-            document.getElementById('manageUsers').addEventListener('click', function() {
-                alert('نافذة إدارة المستخدمين ستفتح هنا');
+                const title = prompt('أدخل عنوان الخبر:');
+                if (!title) return;
+                
+                const content = prompt('أدخل محتوى الخبر:');
+                if (!content) return;
+                
+                const newsContainer = document.getElementById('newsContainer');
+                const newsItem = document.createElement('div');
+                newsItem.className = 'news-item';
+                newsItem.innerHTML = `
+                    <h3>${title}</h3>
+                    <p>${content}</p>
+                    <span class="news-date">${new Date().toLocaleDateString('ar-EG')}</span>
+                `;
+                newsContainer.prepend(newsItem);
+                alert('تم نشر الخبر بنجاح!');
             });
             
             // عرض المناديب
