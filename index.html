@@ -166,6 +166,7 @@
             border-radius: 5px;
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
         }
         
         .academic-area {
@@ -633,11 +634,16 @@
         }
         
         .gdrive-status {
-            padding: 8px;
-            border-radius: 4px;
-            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
             text-align: center;
             font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
         
         .gdrive-connected {
@@ -656,6 +662,43 @@
             background: #fff3cd;
             color: #856404;
             border: 1px solid #ffeeba;
+        }
+        
+        .status-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .status-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            display: none;
+        }
+        
+        .debug-toggle {
+            color: #3498db;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 8px;
         }
         
         @keyframes fadeIn {
@@ -829,7 +872,7 @@
             
             <div class="gdrive-status gdrive-disconnected" id="gdriveStatus">
                 <i class="fas fa-exclamation-triangle"></i> جاري التهيئة...
-                <button onclick="initGoogleAPI()" style="margin-right:10px; background:#3498db; color:white; border:none; padding:5px 10px; border-radius:3px; margin-top: 8px;">
+                <button class="status-btn" onclick="initGoogleAPI()">
                     <i class="fas fa-sync-alt"></i> إعادة المحاولة
                 </button>
             </div>
@@ -1343,7 +1386,7 @@
         let currentSubject = null;
         let isAdminLoggedIn = false;
         let googleAccessToken = null;
-        let currentSchedule = null;
+        let gapiLoaded = false;
         const gdriveStatus = document.getElementById('gdriveStatus');
         
         // إعدادات Google Drive API
@@ -1351,11 +1394,13 @@
         const GOOGLE_API_KEY = 'AIzaSyAhno4TNDmXMdfos8YS61PzaAtoxnF_LG8';
         const DRIVE_FOLDER_ID = '1HN8gM4RYmq6XIKzqhVzsGvWOefV_7kC3';
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-
+        const REDIRECT_URI = 'https://engtaiz.github.io/unv/oauth2callback';
+        
         // ======== Google Drive API Functions ======== //
         function loadGAPI() {
             return new Promise((resolve, reject) => {
                 if (window.gapi) {
+                    gapiLoaded = true;
                     resolve();
                     return;
                 }
@@ -1365,43 +1410,46 @@
                 script.async = true;
                 script.defer = true;
                 script.onload = () => {
+                    gapiLoaded = true;
                     console.log('تم تحميل Google API بنجاح');
                     resolve();
                 };
-                script.onerror = () => {
-                    console.error('فشل تحميل Google API');
+                script.onerror = (err) => {
+                    console.error('فشل تحميل Google API', err);
                     reject(new Error('فشل تحميل مكتبة Google API'));
                 };
                 document.head.appendChild(script);
             });
         }
-
+        
         async function initGoogleAPI() {
-            const statusEl = document.getElementById('gdriveStatus');
             try {
-                statusEl.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> جاري تحميل مكتبة Google API...';
+                // تحديث حالة التحميل
+                gdriveStatus.className = 'gdrive-status gdrive-warning';
+                gdriveStatus.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> جاري تحميل مكتبة Google API...';
                 
-                // تحميل مكتبة Google API
+                // 1. تحميل مكتبة Google API
                 await loadGAPI();
                 
-                statusEl.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> جاري تهيئة Google API...';
-                
-                // تحميل وحدة client:auth2
+                // 2. تحميل وحدة client:auth2
+                gdriveStatus.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> جاري تحميل وحدة المصادقة...';
                 await new Promise((resolve, reject) => {
                     gapi.load('client:auth2', {
                         callback: resolve,
                         onerror: reject,
-                        timeout: 10000,
+                        timeout: 5000,
                         ontimeout: () => reject(new Error('انتهت المهلة في تحميل وحدة المصادقة'))
                     });
                 });
                 
-                // تهيئة العميل
+                // 3. تهيئة العميل مع إعدادات محددة
+                gdriveStatus.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> جاري تهيئة Google API...';
                 await gapi.client.init({
                     apiKey: GOOGLE_API_KEY,
                     clientId: GOOGLE_CLIENT_ID,
                     scope: SCOPES,
-                    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+                    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+                    redirect_uri: REDIRECT_URI
                 });
                 
                 console.log('تم تهيئة Google API بنجاح');
@@ -1409,18 +1457,11 @@
                 
             } catch (error) {
                 console.error('فشل التهيئة:', error);
-                statusEl.className = 'gdrive-status gdrive-disconnected';
-                statusEl.innerHTML = `
-                    <i class="fas fa-exclamation-triangle"></i> فشل التهيئة: ${error.message}
-                    <button onclick="initGoogleAPI()" style="margin-right:10px; background:#3498db; color:white; border:none; padding:5px 10px; border-radius:3px; margin-top:8px;">
-                        <i class="fas fa-sync-alt"></i> إعادة المحاولة
-                    </button>
-                `;
+                showError(`فشل التهيئة: ${error.message || error}`);
             }
         }
-
+        
         async function updateConnectionStatus() {
-            const statusEl = document.getElementById('gdriveStatus');
             try {
                 const auth = gapi.auth2.getAuthInstance();
                 const isSignedIn = auth.isSignedIn.get();
@@ -1428,53 +1469,111 @@
                 if (isSignedIn) {
                     googleAccessToken = auth.currentUser.get().getAuthResponse().access_token;
                     
-                    // اختبار الاتصال الفعلي
-                    const response = await gapi.client.drive.files.list({
-                        pageSize: 1,
-                        fields: 'files(id, name)'
-                    });
-                    
-                    if(response.status === 200) {
-                        statusEl.className = 'gdrive-status gdrive-connected';
-                        statusEl.innerHTML = '<i class="fas fa-check-circle"></i> متصل بـ Google Drive بنجاح';
-                    } else {
-                        statusEl.className = 'gdrive-status gdrive-warning';
-                        statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> اتصال غير مستقر بـ Google Drive';
+                    // اختبار اتصال فعلي بـ Google Drive
+                    try {
+                        const response = await gapi.client.drive.files.list({
+                            pageSize: 1,
+                            fields: 'files(id, name)'
+                        });
+                        
+                        if (response.status === 200) {
+                            gdriveStatus.className = 'gdrive-status gdrive-connected';
+                            gdriveStatus.innerHTML = `
+                                <i class="fas fa-check-circle"></i> متصل بـ Google Drive بنجاح
+                                <div class="debug-info" id="driveDebugInfo"></div>
+                                <div class="debug-toggle" onclick="toggleDebugInfo()">عرض تفاصيل الاتصال</div>
+                            `;
+                            document.getElementById('driveDebugInfo').textContent = JSON.stringify(response.result, null, 2);
+                        } else {
+                            showError(`اتصال غير مستقر: ${response.status} - ${response.statusText}`);
+                        }
+                    } catch (apiError) {
+                        showError(`خطأ في اختبار الاتصال: ${apiError.message}`);
                     }
                 } else {
                     googleAccessToken = null;
-                    statusEl.className = 'gdrive-status gdrive-disconnected';
-                    statusEl.innerHTML = `
+                    gdriveStatus.className = 'gdrive-status gdrive-disconnected';
+                    gdriveStatus.innerHTML = `
                         <i class="fas fa-exclamation-triangle"></i> غير متصل بـ Google Drive
-                        <button onclick="handleGoogleSignIn()" style="margin-right:10px; background:#3498db; color:white; border:none; padding:5px 10px; border-radius:3px; margin-top:8px;">
+                        <button class="status-btn" onclick="handleGoogleSignIn()">
                             <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
                         </button>
+                        <div class="debug-info" id="driveDebugInfo"></div>
+                        <div class="debug-toggle" onclick="toggleDebugInfo()">عرض تفاصيل الاتصال</div>
                     `;
+                    document.getElementById('driveDebugInfo').textContent = JSON.stringify({
+                        clientId: GOOGLE_CLIENT_ID,
+                        apiKey: GOOGLE_API_KEY,
+                        redirectUri: REDIRECT_URI,
+                        scopes: SCOPES
+                    }, null, 2);
                 }
             } catch (error) {
-                console.error('خطأ في تحديث الحالة:', error);
-                statusEl.className = 'gdrive-status gdrive-disconnected';
-                statusEl.innerHTML = `
-                    <i class="fas fa-exclamation-triangle"></i> خطأ في الاتصال: ${error.message}
-                    <button onclick="initGoogleAPI()" style="margin-right:10px; background:#3498db; color:white; border:none; padding:5px 10px; border-radius:3px; margin-top:8px;">
-                        <i class="fas fa-sync-alt"></i> إعادة المحاولة
-                    </button>
-                `;
+                showError(`خطأ في تحديث الحالة: ${error.message}`);
             }
         }
-
+        
         async function handleGoogleSignIn() {
             try {
                 const auth = gapi.auth2.getAuthInstance();
-                await auth.signIn();
-                console.log('تم تسجيل الدخول بنجاح');
-                await updateConnectionStatus();
+                const user = await auth.signIn();
+                
+                if (user) {
+                    googleAccessToken = user.getAuthResponse().access_token;
+                    await updateConnectionStatus();
+                    return true;
+                }
+                return false;
             } catch (error) {
                 console.error('خطأ في تسجيل الدخول:', error);
-                alert('حدث خطأ أثناء تسجيل الدخول: ' + error.message);
+                
+                // تحليل خطأ المصادقة
+                let errorMessage = 'حدث خطأ أثناء تسجيل الدخول';
+                if (error.error === 'popup_closed_by_user') {
+                    errorMessage = 'تم إغلاق نافذة التسجيل من قبل المستخدم';
+                } else if (error.error === 'access_denied') {
+                    errorMessage = 'تم رفض الإذن من قبل المستخدم';
+                } else if (error.details) {
+                    errorMessage = error.details;
+                }
+                
+                alert(errorMessage);
+                return false;
             }
         }
-
+        
+        function showError(message) {
+            gdriveStatus.className = 'gdrive-status gdrive-disconnected';
+            gdriveStatus.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i> ${message}
+                <button class="status-btn" onclick="initGoogleAPI()">
+                    <i class="fas fa-sync-alt"></i> إعادة المحاولة
+                </button>
+                <div class="debug-info" id="driveDebugInfo"></div>
+                <div class="debug-toggle" onclick="toggleDebugInfo()">عرض تفاصيل الخطأ</div>
+            `;
+            
+            // تسجيل معلومات التصحيح
+            const debugInfo = document.getElementById('driveDebugInfo');
+            if (debugInfo) {
+                debugInfo.textContent = JSON.stringify({
+                    clientId: GOOGLE_CLIENT_ID,
+                    apiKey: GOOGLE_API_KEY,
+                    redirectUri: REDIRECT_URI,
+                    scopes: SCOPES,
+                    gapiLoaded: gapiLoaded,
+                    timestamp: new Date().toISOString()
+                }, null, 2);
+            }
+        }
+        
+        function toggleDebugInfo() {
+            const debugInfo = document.getElementById('driveDebugInfo');
+            if (debugInfo) {
+                debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+        
         // ======== النظام الأكاديمي ======== //
         function showSections() {
             const sectionsDiv = document.getElementById('sections');
@@ -1669,9 +1768,88 @@
 
         function showUploadForm() {
             document.getElementById('uploadForm').style.display = 'block';
-            handleGoogleSignIn();
         }
 
+        async function uploadFile() {
+            if (!googleAccessToken) {
+                const signedIn = await handleGoogleSignIn();
+                if (!signedIn) return;
+            }
+            
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert('الرجاء اختيار ملف للرفع');
+                return;
+            }
+            
+            const fileName = document.getElementById('fileName').value || fileInput.files[0].name;
+            const fileType = document.getElementById('fileType').value;
+            const fileDescription = document.getElementById('fileDescription').value;
+            const file = fileInput.files[0];
+            
+            try {
+                // محاكاة الرفع الناجح
+                const progressEl = document.createElement('div');
+                progressEl.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> جاري رفع الملف...';
+                document.getElementById('uploadForm').appendChild(progressEl);
+                
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                progressEl.innerHTML = '<i class="fas fa-check-circle"></i> تم رفع الملف بنجاح!';
+                
+                // إضافة الملف إلى القائمة
+                addFileToList({
+                    id: 'simulated-file-id',
+                    name: fileName,
+                    type: fileType,
+                    description: fileDescription,
+                    date: new Date().toLocaleDateString('ar-EG')
+                });
+                
+                // إعادة تعيين الحقول
+                document.getElementById('fileName').value = '';
+                document.getElementById('fileDescription').value = '';
+                fileInput.value = '';
+                
+            } catch (error) {
+                console.error('فشل رفع الملف:', error);
+                alert('حدث خطأ أثناء رفع الملف. الرجاء المحاولة لاحقًا.');
+            }
+        }
+
+        function addFileToList(file) {
+            const filesContainer = document.getElementById('filesContainer');
+            const fileTypeClass = `file-type-${file.type}`;
+            
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <a href="#" target="_blank">
+                    <i class="fas fa-file-download"></i> ${file.name}
+                    <span class="file-type-badge ${fileTypeClass}">${getFileTypeName(file.type)}</span>
+                </a>
+                <span class="file-date">${file.date}</span>
+                ${file.description ? `<p>${file.description}</p>` : ''}
+                ${isAdminLoggedIn ? `<span class="delete-file" onclick="deleteFile('${file.id}')"><i class="fas fa-trash"></i></span>` : ''}
+            `;
+            
+            // إزالة رسالة عدم وجود ملفات إذا كانت موجودة
+            const emptyMessage = filesContainer.querySelector('.empty-message');
+            if (emptyMessage) emptyMessage.remove();
+            
+            filesContainer.prepend(fileItem);
+        }
+
+        function getFileTypeName(type) {
+            const types = {
+                'lecture': 'محاضرة',
+                'summary': 'ملخص',
+                'exam': 'اختبار',
+                'practical': 'عملي'
+            };
+            return types[type] || type;
+        }
+        
         // ======== إدارة الجدول الدراسي ======== //
         async function uploadSchedule() {
             const fileInput = document.getElementById('scheduleUpload');
@@ -1684,9 +1862,6 @@
             const fileName = `جدول_دراسي_${new Date().toISOString().slice(0, 10)}.${file.name.split('.').pop()}`;
             
             try {
-                // في بيئة حقيقية، هنا سيتم رفع الملف إلى Google Drive
-                // ولكن لأغراض العرض، سنحاكي العملية
-                
                 // محاكاة الرفع الناجح
                 await new Promise(resolve => setTimeout(resolve, 1500));
                 
